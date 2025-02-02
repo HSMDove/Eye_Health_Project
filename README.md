@@ -1,4 +1,4 @@
-# theproject
+# The Project
 
 Eye blink monitoring app
 
