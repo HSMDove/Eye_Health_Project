@@ -12,7 +12,7 @@ class BlinkCounter {
     final rightEyeOpen = face.rightEyeOpenProbability ?? 1.0;
 
     // تحديد ما إذا كانت العينان مفتوحتين أو مغلقتين
-    final bool areEyesClosed = (leftEyeOpen < 0.2 && rightEyeOpen < 0.2);
+    final bool areEyesClosed = (leftEyeOpen < 0.1 && rightEyeOpen < 0.1);
     final bool areEyesOpen = (leftEyeOpen > 0.5 && rightEyeOpen > 0.5); // ✅ عتبة 0.5 كما في الكود الجيد
 
     // ✅ منطق الكود الجيد:

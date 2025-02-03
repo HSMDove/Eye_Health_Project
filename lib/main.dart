@@ -17,7 +17,7 @@ void main() async {
   // 🔹 إنشاء كائنات FaceDetectionManager و CameraManager وتمرير الكاميرا الأمامية
   FaceDetectionManager faceDetectionManager = FaceDetectionManager();
   CameraManager cameraManager = CameraManager(faceDetectionManager, frontCamera);
-
+ 
   runApp(MyApp(cameraManager: cameraManager));
 }
 
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: CameraScreen(cameraManager: cameraManager), // ✅ تمرير CameraManager إلى الـ UI
+      home: CameraScreen(cameraManager: cameraManager),
     );
   }
 }

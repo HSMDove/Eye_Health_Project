@@ -44,8 +44,8 @@ class _CameraScreenState extends State<CameraScreen> {
             final rightEyeOpenProb = face.rightEyeOpenProbability ?? 1.0;
             final leftEyeOpenProb = face.leftEyeOpenProbability ?? 1.0;
 
-            rightEyeStatus = rightEyeOpenProb < 0.3 ? "مغلقة" : "مفتوحة";
-            leftEyeStatus = leftEyeOpenProb < 0.3 ? "مغلقة" : "مفتوحة";
+            rightEyeStatus = rightEyeOpenProb < 0.1 ? "مغلقة" : "مفتوحة";
+            leftEyeStatus = leftEyeOpenProb < 0.1 ? "مغلقة" : "مفتوحة";
 
             // ✅ استخدام `BlinkCounter` لحساب الرمشات
             blinkCounter.updateBlinkCount(face);
@@ -60,55 +60,58 @@ class _CameraScreenState extends State<CameraScreen> {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          /// ✅ **عرض الكاميرا بعد عكسها**
-          Center(
-            child: _isCameraInitialized
-                ? Transform.scale(
-              scaleX: -1,
-              child: CameraPreview(widget.cameraManager.controller),
-            )
-                : const CircularProgressIndicator(),
-          ),
+      body: Container(
+        color: const Color.fromARGB(255, 57, 57, 57),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            /// ✅ **عرض الكاميرا بعد عكسها**
+            Center(
+              child: _isCameraInitialized
+                  ? Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 10, color: const Color.fromARGB(255, 0, 0, 0)), // Border color
+                        borderRadius: BorderRadius.circular(50), // Rounded corners
+                      ),
+                      width: 200,
+                      height: 300,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(40), // Apply the same radius
+                        child: Transform.scale(
+                          scaleX: -1, // Flip the camera horizontally
+                          child: CameraPreview(widget.cameraManager.controller), // Display camera preview
+                        ),
+                      ),
+                    )
+                  : const CircularProgressIndicator(),
+            ),
 
-          /// ✅ **إضافة `CustomPaint` فوق الكاميرا**
-          if (_faces.isNotEmpty && _previewSize != null)
-            Positioned.fill(
-              child: CustomPaint(
-                painter: FaceContourPainter(
-                  faces: _faces,
-                  screenSize: screenSize,
-                  previewSize: _previewSize!,
+            /// ✅ **مربع بيانات الرمشات أسفل الشاشة**
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("👁 حالة العين اليمنى: $rightEyeStatus",
+                        style: const TextStyle(color: Colors.white, fontSize: 16)),
+                    Text("👁 حالة العين اليسرى: $leftEyeStatus",
+                        style: const TextStyle(color: Colors.white, fontSize: 16)),
+                    Text(" عدد الرمشات: ${blinkCounter.blinkCount}",
+                        style: const TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold)), // ✅ استخدام BlinkCounter هنا
+                  ],
                 ),
               ),
             ),
-
-          /// ✅ **مربع بيانات الرمشات أسفل الشاشة**
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("👁 حالة العين اليمنى: $rightEyeStatus",
-                      style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  Text("👁 حالة العين اليسرى: $leftEyeStatus",
-                      style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  Text(" عدد الرمشات: ${blinkCounter.blinkCount}",
-                      style: const TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold)), // ✅ استخدام BlinkCounter هنا
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
