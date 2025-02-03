@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../management/camera_manager.dart';
-//import '../management/face_detection_manager.dart';
 import '../widgets/face_contour_painter.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
+import '../management/blink_counter.dart'; // ✅ استيراد كود حساب الرمشات
 
 class CameraScreen extends StatefulWidget {
   final CameraManager cameraManager;
-  CameraScreen({required this.cameraManager});
+  const CameraScreen({super.key, required this.cameraManager});
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -17,8 +17,9 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
   List<Face> _faces = [];
   Size? _previewSize;
-  List<String> debugMessages = [];
-  bool showDebugMessages = false; // ✅ متغير للتحكم في عرض رسائل التتبع
+  BlinkCounter blinkCounter = BlinkCounter(); // ✅ إضافة كود حساب الرمشات
+  String rightEyeStatus = "مفتوحة";
+  String leftEyeStatus = "مفتوحة";
 
   @override
   void initState() {
@@ -37,8 +38,17 @@ class _CameraScreenState extends State<CameraScreen> {
       if (mounted) {
         setState(() {
           _faces = faces;
-          if (showDebugMessages) {
-            debugMessages.add("✅ اكتشفنا ${faces.length} وجه!");
+
+          if (faces.isNotEmpty) {
+            final face = faces.first;
+            final rightEyeOpenProb = face.rightEyeOpenProbability ?? 1.0;
+            final leftEyeOpenProb = face.leftEyeOpenProbability ?? 1.0;
+
+            rightEyeStatus = rightEyeOpenProb < 0.3 ? "مغلقة" : "مفتوحة";
+            leftEyeStatus = leftEyeOpenProb < 0.3 ? "مغلقة" : "مفتوحة";
+
+            // ✅ استخدام `BlinkCounter` لحساب الرمشات
+            blinkCounter.updateBlinkCount(face);
           }
         });
       }
@@ -59,7 +69,7 @@ class _CameraScreenState extends State<CameraScreen> {
               scaleX: -1,
               child: CameraPreview(widget.cameraManager.controller),
             )
-                : CircularProgressIndicator(),
+                : const CircularProgressIndicator(),
           ),
 
           /// ✅ **إضافة `CustomPaint` فوق الكاميرا**
@@ -74,24 +84,30 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ),
 
-          /// ✅ **عرض رسائل التتبع فقط إذا كان `showDebugMessages` مفعل**
-          if (showDebugMessages)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: EdgeInsets.all(8),
+          /// ✅ **مربع بيانات الرمشات أسفل الشاشة**
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.7),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: debugMessages.map((msg) => Text(
-                    msg,
-                    style: TextStyle(color: Colors.white, fontSize: 14),
-                  )).toList(),
-                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("👁 حالة العين اليمنى: $rightEyeStatus",
+                      style: const TextStyle(color: Colors.white, fontSize: 16)),
+                  Text("👁 حالة العين اليسرى: $leftEyeStatus",
+                      style: const TextStyle(color: Colors.white, fontSize: 16)),
+                  Text(" عدد الرمشات: ${blinkCounter.blinkCount}",
+                      style: const TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold)), // ✅ استخدام BlinkCounter هنا
+                ],
               ),
             ),
+          ),
         ],
       ),
     );

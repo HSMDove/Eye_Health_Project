@@ -23,7 +23,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final CameraManager cameraManager;
-  MyApp({required this.cameraManager});
+  const MyApp({super.key, required this.cameraManager});
 
   @override
   Widget build(BuildContext context) {
