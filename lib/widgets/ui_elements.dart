@@ -3,7 +3,7 @@ import 'package:camera/camera.dart';
 import '../management/camera_manager.dart';
 import '../widgets/face_contour_painter.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
-import '../management/blink_counter.dart'; // ✅ استيراد كود حساب الرمشات
+import '../management/blink_counter.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraManager cameraManager;
@@ -17,9 +17,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
   List<Face> _faces = [];
   Size? _previewSize;
-  BlinkCounter blinkCounter = BlinkCounter(); // ✅ إضافة كود حساب الرمشات
-  String rightEyeStatus = "مفتوحة";
-  String leftEyeStatus = "مفتوحة";
+  BlinkCounter blinkCounter = BlinkCounter();
 
   @override
   void initState() {
@@ -38,16 +36,8 @@ class _CameraScreenState extends State<CameraScreen> {
       if (mounted) {
         setState(() {
           _faces = faces;
-
           if (faces.isNotEmpty) {
             final face = faces.first;
-            final rightEyeOpenProb = face.rightEyeOpenProbability ?? 1.0;
-            final leftEyeOpenProb = face.leftEyeOpenProbability ?? 1.0;
-
-            rightEyeStatus = rightEyeOpenProb < 0.1 ? "مغلقة" : "مفتوحة";
-            leftEyeStatus = leftEyeOpenProb < 0.1 ? "مغلقة" : "مفتوحة";
-
-            // ✅ استخدام `BlinkCounter` لحساب الرمشات
             blinkCounter.updateBlinkCount(face);
           }
         });
@@ -57,60 +47,176 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: Container(
-        color: const Color.fromARGB(255, 57, 57, 57),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            /// ✅ **عرض الكاميرا بعد عكسها**
-            Center(
-              child: _isCameraInitialized
-                  ? Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 10, color: const Color.fromARGB(255, 0, 0, 0)), // Border color
-                        borderRadius: BorderRadius.circular(50), // Rounded corners
-                      ),
-                      width: 200,
-                      height: 300,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40), // Apply the same radius
-                        child: Transform.scale(
-                          scaleX: -1, // Flip the camera horizontally
-                          child: CameraPreview(widget.cameraManager.controller), // Display camera preview
-                        ),
-                      ),
-                    )
-                  : const CircularProgressIndicator(),
-            ),
-
-            /// ✅ **مربع بيانات الرمشات أسفل الشاشة**
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: const Color(0xFFeff2f6),
+      body: SafeArea(
+        child: SingleChildScrollView( // تجنب مشكلة BOTTOM OVERFLOWED
+          child: Column(
+            children: [
+              /// مربع العنوان العلوي
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Stack(
                   children: [
-                    Text("👁 حالة العين اليمنى: $rightEyeStatus",
-                        style: const TextStyle(color: Colors.white, fontSize: 16)),
-                    Text("👁 حالة العين اليسرى: $leftEyeStatus",
-                        style: const TextStyle(color: Colors.white, fontSize: 16)),
-                    Text(" عدد الرمشات: ${blinkCounter.blinkCount}",
-                        style: const TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold)), // ✅ استخدام BlinkCounter هنا
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7b62d3),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF7b62d3).withOpacity(0.5),
+                            blurRadius: 15,
+                            spreadRadius: 3,
+                          ),
+                        ],
+                      ),
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end, // جعل النص بمحاذاة اليمين
+                        children: const [
+                          Text(
+                            "مرحبا",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold, // جعل الخط بولد
+                              shadows: [Shadow(color: Colors.white54, blurRadius: 10)],
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            "اعتنِ بعينك، فالحفاظ على معدل رمش طبيعي يقلل من جفاف العين و يمنع الإجهاد.",
+                            textAlign: TextAlign.right, // محاذاة النص لليمين
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold, // جعل الخط بولد
+                              shadows: [Shadow(color: Colors.white54, blurRadius: 15)],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    /// زر الإعدادات في الزاوية العلوية اليسرى
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.white),
+                        onPressed: () {}, // لم يتم تحديد وظيفة للزر حالياً
+                      ),
+                    ),
                   ],
                 ),
               ),
+
+              /// عرض الكاميرا في شكل دائرة
+              Center(
+                child: _isCameraInitialized
+                    ? Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF7b62d3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF7b62d3).withOpacity(0.5),
+                        blurRadius: 10,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()..scale(-1.0, 1.0), // عكس الكاميرا ليظهر الوجه بشكل طبيعي
+                      child: CameraPreview(widget.cameraManager.controller),
+                    ),
+                  ),
+                )
+                    : const CircularProgressIndicator(), // مؤشر تحميل في حال عدم تهيئة الكاميرا
+              ),
+
+              const SizedBox(height: 20),
+
+              /// مربعات المعلومات المختلفة
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildInfoBox("الوقت: ٥ ثواني من ٣٠ ثانية\nالدورة: ١٠ من ١٥\nعدد الرمشات: ٧ رمشات في الدقيقة"),
+                    _buildInfoBox("حالة الرمشات: منخفض\nمتوسط هناك: منخفض"),
+                    _buildInfoBox("👁 العين اليمنى: ${blinkCounter.rightEyeStatus}\n👁 العين اليسرى: ${blinkCounter.leftEyeStatus}\nعدد الرمشات: ${blinkCounter.blinkCount}"),
+                    _buildInfoBox("هل المستشعر يعمل؟ نعم\nهل تم التعرف على العينين؟ نعم" , ),
+
+                  ],
+                ),
+              ),
+
+              /// زر إيقاف التشغيل (لا يعمل حالياً)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7b62d3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shadowColor: const Color(0xFF7b62d3).withOpacity(0.5),
+                      elevation: 10,
+                    ),
+                    onPressed: () {}, // لم يتم تعيين وظيفة للزر بعد
+                    child: const Text(
+                      "إيقاف التشغيل",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold, // جعل النص بولد
+                        shadows: [Shadow(color: Colors.white54, blurRadius: 10)],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// دالة لإنشاء مربعات المعلومات بشكل متناسق
+  Widget _buildInfoBox(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF7b62d3),
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF7b62d3).withOpacity(0.5),
+              blurRadius: 10,
+              spreadRadius: 5,
             ),
           ],
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
