@@ -1,10 +1,14 @@
-# The Project
+# Eye Health Project
 
 Eye blink monitoring app
 
-## Getting Started
+## Description :
+The "Eye Health" project is a university project. It is a program that monitors eye blinks, calculates them, and alerts the user whether his blinks are within the normal range or not.
 
-This project is a starting point for a Flutter application.
+Used:
+flutter
+dart
+ML kit
 
 A few resources to get you started if this is your first Flutter project:
 
