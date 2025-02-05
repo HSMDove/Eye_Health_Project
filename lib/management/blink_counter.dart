@@ -28,11 +28,6 @@ class BlinkCounter {
     final bool isSingleEyeClosed = (leftEyeOpen < 0.15 || rightEyeOpen < 0.15);
     final bool areEyesOpen = (leftEyeOpen > 0.6 && rightEyeOpen > 0.6);
 
-    // مقارنة الإطار الحالي مع السابق لتحسين دقة الحساب
-    final bool wasEyesOpenBefore = (previousLeftEyeOpen > 0.6 && previousRightEyeOpen > 0.6);
-    final bool isClosingNow = (previousLeftEyeOpen > 0.6 && leftEyeOpen < 0.15) ||
-        (previousRightEyeOpen > 0.6 && rightEyeOpen < 0.15);
-
     // احتساب الرمشات حسب الإعداد
     if (allowSingleEyeBlink) {
       // ✅ الوضع: احتساب الرمشات حتى لو كانت بعين واحدة

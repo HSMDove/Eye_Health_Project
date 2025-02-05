@@ -8,6 +8,7 @@ class CameraManager {
   final FaceDetectionManager _faceDetectionManager;
   final CameraDescription frontCamera;
   bool _isProcessing = false;
+  bool faceDetect = false;
 
   CameraManager(this._faceDetectionManager, this.frontCamera);
 
@@ -27,6 +28,7 @@ class CameraManager {
         try {
           List<Face> faces = await _faceDetectionManager.detectFaces(image, _cameraController.description);
           debugPrint("📸 عدد الأوجه المكتشفة: ${faces.length}");
+          faces.length == 0 ? faceDetect = false : faceDetect = true;
           onFacesDetected(faces);
         } catch (e) {
           debugPrint("❌ خطأ في تحليل الصورة: $e");

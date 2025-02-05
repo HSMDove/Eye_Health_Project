@@ -26,38 +26,6 @@ class FaceContourPainter extends CustomPainter {
       debugPrint("❌ لا توجد وجوه مكتشفة!");
       return;
     }
-
-    for (Face face in faces) {
-      final contours = face.contours;
-      debugPrint("✅ تم اكتشاف ${faces.length} وجه/وجوه");
-
-      _drawContour(contours[FaceContourType.face], canvas, paint..color = Colors.green, scaleX, scaleY);
-      _drawContour(contours[FaceContourType.leftEye], canvas, paint..color = Colors.blue, scaleX, scaleY);
-      _drawContour(contours[FaceContourType.rightEye], canvas, paint..color = Colors.blue, scaleX, scaleY);
-      _drawContour(contours[FaceContourType.noseBottom], canvas, paint..color = Colors.purple, scaleX, scaleY);
-      _drawContour(contours[FaceContourType.upperLipTop], canvas, paint..color = Colors.red, scaleX, scaleY);
-      _drawContour(contours[FaceContourType.lowerLipBottom], canvas, paint..color = Colors.red, scaleX, scaleY);
-    }
-  }
-
-  void _drawContour(FaceContour? contour, Canvas canvas, Paint paint, double scaleX, double scaleY) {
-    if (contour == null || contour.points.isEmpty) {
-      debugPrint("⚠ لا توجد نقاط متاحة لهذا المعلم: $contour");
-      return;
-    }
-
-    for (int i = 0; i < contour.points.length - 1; i++) {
-      final p1 = contour.points[i];
-      final p2 = contour.points[i + 1];
-
-      // ✅ **عكس X لجعل الرسم متطابقًا مع الكاميرا المعكوسة**
-      final adjustedP1 = Offset((screenSize.width - (p1.x * scaleX)), p1.y * scaleY);
-      final adjustedP2 = Offset((screenSize.width - (p2.x * scaleX)), p2.y * scaleY);
-
-      debugPrint("🎯 نقطة مرسومة: (${adjustedP1.dx}, ${adjustedP1.dy}) -> (${adjustedP2.dx}, ${adjustedP2.dy})");
-
-      canvas.drawLine(adjustedP1, adjustedP2, paint);
-    }
   }
 
 

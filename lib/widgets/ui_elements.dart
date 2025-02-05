@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../management/camera_manager.dart';
-import '../widgets/face_contour_painter.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
 import '../management/blink_counter.dart';
+import '../management/camera_manager.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraManager cameraManager;
@@ -15,13 +14,20 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
-  List<Face> _faces = [];
-  Size? _previewSize;
   BlinkCounter blinkCounter = BlinkCounter();
+  
+  //قائمة الأعدادات
+  bool notifications = false;
+  bool dark = false;
 
+  late CameraManager cm;
+  
   @override
   void initState() {
     super.initState();
+
+    cm = widget.cameraManager;
+
     _initializeCamera();
   }
 
@@ -29,13 +35,11 @@ class _CameraScreenState extends State<CameraScreen> {
     await widget.cameraManager.initializeCamera();
     setState(() {
       _isCameraInitialized = widget.cameraManager.isInitialized;
-      _previewSize = widget.cameraManager.controller.value.previewSize;
     });
 
     widget.cameraManager.startImageStream((faces) {
       if (mounted) {
         setState(() {
-          _faces = faces;
           if (faces.isNotEmpty) {
             final face = faces.first;
             blinkCounter.updateBlinkCount(face);
@@ -48,7 +52,59 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFeff2f6),
+      backgroundColor: dark? Color(0xff002941):const Color.fromARGB(255, 145, 195, 209),
+      appBar: AppBar(
+        backgroundColor: dark? Color(0xFF29637e):Color(0xff79a7b4),
+        centerTitle: true,
+        title: Image.asset('assets/images/Icon.png', height:50), // ضع صورة هنا
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.settings, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            );
+          },
+        ),
+      ),
+      drawer: Drawer(
+        backgroundColor: dark? Color(0xff002941):const Color.fromARGB(255, 145, 195, 209),
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: dark? Color(0xFF29637e):Color(0xff79a7b4)),
+              child: const Center(
+                child: Text(
+                  "الإعدادات",
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            SwitchListTile(
+              activeColor: Color.fromARGB(255, 94, 210, 242),
+              title: const Text("تفعيل الإشعارات",
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+              ),
+              value: notifications,
+              onChanged: (value) {
+                setState(() {
+                  notifications = value;
+                });
+              },
+            ),
+            SwitchListTile(
+              activeColor: Color.fromARGB(255, 94, 210, 242),
+              title: const Text("الوضع الليلي",
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+              ),
+              value: dark,
+              onChanged: (value) {
+                setState(() {
+                  dark = value;
+                });
+              },
+            ),
+          ]),
+        ),
       body: SafeArea(
         child: SingleChildScrollView( // تجنب مشكلة BOTTOM OVERFLOWED
           child: Column(
@@ -61,15 +117,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF7b62d3),
+                        color: dark? Color(0xFF29637e) : Color(0xff79a7b4),
                         borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF7b62d3).withOpacity(0.5),
-                            blurRadius: 15,
-                            spreadRadius: 3,
-                          ),
-                        ],
                       ),
                       width: double.infinity,
                       child: Column(
@@ -98,16 +147,6 @@ class _CameraScreenState extends State<CameraScreen> {
                         ],
                       ),
                     ),
-
-                    /// زر الإعدادات في الزاوية العلوية اليسرى
-                    Positioned(
-                      left: 10,
-                      top: 10,
-                      child: IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.white),
-                        onPressed: () {}, // لم يتم تحديد وظيفة للزر حالياً
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -115,31 +154,57 @@ class _CameraScreenState extends State<CameraScreen> {
               /// عرض الكاميرا في شكل دائرة
               Center(
                 child: _isCameraInitialized
-                    ? Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF7b62d3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF7b62d3).withOpacity(0.5),
-                        blurRadius: 10,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.identity()..scale(-1.0, 1.0), // عكس الكاميرا ليظهر الوجه بشكل طبيعي
-                      child: CameraPreview(widget.cameraManager.controller),
+                  ?(cm.faceDetect == false?
+                  //عند عدم وجود وجه امام الكاميرا
+                  Container(                      
+                    width: 200,
+                    height: 200,
+                    alignment: Alignment.center,
+                    child: Text("لا يوجد وجه \n امام الكاميرا",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold
                     ),
-                  ),
-                )
-                    : const CircularProgressIndicator(), // مؤشر تحميل في حال عدم تهيئة الكاميرا
-              ),
+                    
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(200),
+                      color: dark? Color(0xFF29637e) : Color(0xff79a7b4),
+                    ),
+                  ) 
+                  //عند وجود وجه امام الكاميرا
+                  : Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(200),
+                        color: dark? Color(0xFF29637e) : Color(0xff79a7b4)
+                      ),
+                      
 
+                      child: ClipOval(
+                        child: Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()..scale(-1.0, 1.0), // عكس الكاميرا
+                          child: SizedBox(
+                            width: 200,
+                            height: 200,
+                            child: FittedBox(
+                              fit: BoxFit.cover, // يحافظ على الجودة
+                              child: SizedBox(
+                                width: widget.cameraManager.controller.value.previewSize?.height ?? 200,
+                                height: widget.cameraManager.controller.value.previewSize?.width ?? 200,
+                                child: CameraPreview(widget.cameraManager.controller),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  )
+                  : const CircularProgressIndicator(),
+              ),
               const SizedBox(height: 20),
 
               /// مربعات المعلومات المختلفة
@@ -163,12 +228,11 @@ class _CameraScreenState extends State<CameraScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7b62d3),
+                      backgroundColor: dark? Color(0xFF29637e) : Color(0xff79a7b4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shadowColor: const Color(0xFF7b62d3).withOpacity(0.5),
                       elevation: 10,
                     ),
                     onPressed: () {}, // لم يتم تعيين وظيفة للزر بعد
@@ -178,7 +242,6 @@ class _CameraScreenState extends State<CameraScreen> {
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold, // جعل النص بولد
-                        shadows: [Shadow(color: Colors.white54, blurRadius: 10)],
                       ),
                     ),
                   ),
@@ -199,15 +262,9 @@ class _CameraScreenState extends State<CameraScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF7b62d3),
+          color: dark? Color(0xFF29637e) : Color(0xff79a7b4),
           borderRadius: BorderRadius.circular(40),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF7b62d3).withOpacity(0.5),
-              blurRadius: 10,
-              spreadRadius: 5,
-            ),
-          ],
+
         ),
         child: Text(
           text,
