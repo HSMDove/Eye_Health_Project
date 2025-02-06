@@ -12,7 +12,7 @@ class BlinkCounter {
   double previousLeftEyeOpen = 1.0; // تتبع حالة العين اليسرى من الإطار السابق
   double previousRightEyeOpen = 1.0; // تتبع حالة العين اليمنى من الإطار السابق
 
-  bool allowSingleEyeBlink = true; // ✅ متغير للتحكم في احتساب رمشة العين الواحدة
+  bool allowSingleEyeBlink = true; //  متغير للتحكم في احتساب رمشة العين الواحدة
 
   /// تحديث عدد الرمشات بناءً على بيانات الوجه اللي تجي من الكاميرا
   void updateBlinkCount(Face face) {
@@ -30,7 +30,7 @@ class BlinkCounter {
 
     // احتساب الرمشات حسب الإعداد
     if (allowSingleEyeBlink) {
-      // ✅ الوضع: احتساب الرمشات حتى لو كانت بعين واحدة
+      //  الوضع: احتساب الرمشات حتى لو كانت بعين واحدة
       if (isSingleEyeClosed) {
         isBothEyesClosed = true;
       } else if (isBothEyesClosed && areEyesOpen && blinkCooldown == 0) {
@@ -40,7 +40,7 @@ class BlinkCounter {
         debugPrint("عدد الرمشات: $blinkCount");
       }
     } else {
-      // ✅ الوضع الطبيعي: احتساب الرمشات فقط إذا كانت **العينان مغلقتين**
+      //  الوضع الطبيعي: احتساب الرمشات فقط إذا كانت **العينان مغلقتين**
       if (areEyesClosed) {
         isBothEyesClosed = true;
       } else if (isBothEyesClosed && areEyesOpen && blinkCooldown == 0) {

@@ -2,18 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:camera/camera.dart';
 import 'dart:typed_data';
-import 'blink_counter.dart'; // ✅ استدعاء كود عداد الرمشات
+import 'blink_counter.dart'; //
 
 class FaceDetectionManager {
   final FaceDetector _faceDetector;
-  final BlinkCounter _blinkCounter = BlinkCounter(); // ✅ إنشاء كائن عداد الرمشات
+  final BlinkCounter _blinkCounter = BlinkCounter(); // نسوي اوبجكت من الـ BlinkCounter
 
   FaceDetectionManager()
       : _faceDetector = GoogleMlKit.vision.faceDetector(
     FaceDetectorOptions(
-      enableContours: true, // ✅ ضروري لرسم الملامح
-      enableClassification: true, // ✅ لمعرفة حالة العينين
-      enableLandmarks: true, // ✅ لاكتشاف أماكن العينين والأنف
+      //enableContours: true, // عشان رسم ملامح الوجه
+      enableClassification: true, // لحالة العين
+      enableLandmarks: true, // عشان نعرف مكان العين
     ),
   );
 
@@ -22,7 +22,7 @@ class FaceDetectionManager {
       final inputImage = _convertCameraImage(image, camera);
       final faces = await _faceDetector.processImage(inputImage);
 
-      // ✅ تحديث عداد الرمشات لكل وجه مكتشف
+      //  تحديث عداد الرمشات لكل وجه مكتشف
       if (faces.isNotEmpty) {
         _blinkCounter.updateBlinkCount(faces.first);
       }
@@ -35,12 +35,12 @@ class FaceDetectionManager {
     }
   }
 
-  /// **🔹 إرجاع عدد الرمشات**
+  // نرجع عدد الرمشات
   int getBlinkCount() {
     return _blinkCounter.blinkCount;
   }
 
-  /// **🔹 إعادة ضبط العداد**
+  // دالة لإعادة ضبط الرمسات
   void resetBlinkCount() {
     _blinkCounter.resetCounter();
   }
