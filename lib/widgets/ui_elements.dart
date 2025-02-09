@@ -1,17 +1,22 @@
+// ----- استيراد الحزم والملفات اللازمة ----- //
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../management/camera_manager.dart';
 import '../management/blink_counter.dart';
 import '../management/camera_manager.dart';
 
+// ----- واجهة الكاميرا ----- //
 class CameraScreen extends StatefulWidget {
   final CameraManager cameraManager;
+
+  // -----  (Constructor) ----- //
   const CameraScreen({super.key, required this.cameraManager});
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
+// ----- حالة واجهة الكاميرا (State) ----- //
 class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
   BlinkCounter blinkCounter = BlinkCounter();
@@ -22,6 +27,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   late CameraManager cm;
 
+  // ----- دالة التهيئة الأولية (initState) ----- //
   @override
   void initState() {
     super.initState();
@@ -29,6 +35,7 @@ class _CameraScreenState extends State<CameraScreen> {
     _initializeCamera();
   }
 
+  // ----- دالة تهيئة الكاميرا ----- //
   Future<void> _initializeCamera() async {
     await widget.cameraManager.initializeCamera();
     setState(() {
@@ -47,16 +54,21 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
+  // ----- دالة البناء الرئيسية (build) ----- //
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: dark ? const Color(0xFF222831) : const Color.fromARGB(255, 145, 195, 209), // الخلفية في الوضح الليلي
+
+      // ----- AppBar -----//
       appBar: AppBar(
         backgroundColor: dark ? const Color(0xFF393E46) : const Color(0xff79a7b4), //  لون الـ AppBar
         centerTitle: true,
         title: Image.asset('assets/images/Icon.png', height: 50),
         leading: Builder(
           builder: (context) {
+
+            //// ----- زر الاعدادات -----
             return IconButton(
               icon: const Icon(Icons.settings, color: Colors.white),
               onPressed: () => Scaffold.of(context).openDrawer(),
@@ -64,6 +76,8 @@ class _CameraScreenState extends State<CameraScreen> {
           },
         ),
       ),
+
+      // ----- قائمة الإعدادات (Drawer) ----- //
       drawer: Drawer(
         backgroundColor: dark ? const Color(0xFF222831) : const Color.fromARGB(255, 145, 195, 209),
         child: Column(
@@ -77,6 +91,8 @@ class _CameraScreenState extends State<CameraScreen> {
                 ),
               ),
             ),
+
+            //// الزر حق تفعيل الاشعارات
             SwitchListTile(
               activeColor: const Color(0xFF00ADB5),
               title: const Text("تفعيل الإشعارات",
@@ -88,6 +104,8 @@ class _CameraScreenState extends State<CameraScreen> {
                 });
               },
             ),
+
+            //// الزر حق تفعيل الوضع الليلي
             SwitchListTile(
               activeColor: const Color(0xFF00ADB5),
               title: const Text("الوضع الليلي",
@@ -102,14 +120,16 @@ class _CameraScreenState extends State<CameraScreen> {
           ],
         ),
       ),
+
+      // ----- محتوى الصفحة (Body) ----- //
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-
             children: [
               const SizedBox(height: 20),
-              Center(
 
+              // ----- عرض الكاميرا أو النص البديل ----- //
+              Center(
                 child: _isCameraInitialized
                     ? (cm.faceDetect == false
                     ? Container(
@@ -156,19 +176,28 @@ class _CameraScreenState extends State<CameraScreen> {
 
               const SizedBox(height: 20),
 
+              // ----- المعلومات والبيانات ----- //
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
+                    // المربع الأول
                     _buildInfoBox("الوقت: ٥ ثواني من ٣٠ ثانية\nالدورة: ١٠ من ١٥\nعدد الرمشات: ٧ رمشات في الدقيقة"),
+
+                    // المربع الثاني
                     _buildInfoBox("حالة الرمشات: منخفض\nمتوسط الرمشات: منخفض"),
+
+                    // المربع الثالث
                     _buildInfoBox(
                         "👁 العين اليمنى: ${blinkCounter.rightEyeStatus}\n👁 العين اليسرى: ${blinkCounter.leftEyeStatus}\nعدد الرمشات: ${blinkCounter.blinkCount}"),
+
+                    // المربع الرابع
                     _buildInfoBox("هل المستشعر يعمل؟ نعم\nهل تم التعرف على العينين؟ نعم"),
                   ],
                 ),
               ),
 
+              // ----- زر إيقاف التشغيل ----- //
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
@@ -202,6 +231,7 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
+  // ----- ودجت بناء المربع الي نكتب فيه المعلومات ----- //
   Widget _buildInfoBox(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
