@@ -27,11 +27,11 @@ class CameraManager {
 
         try {
           List<Face> faces = await _faceDetectionManager.detectFaces(image, _cameraController.description);
-          debugPrint("📸 عدد الأوجه المكتشفة: ${faces.length}");
+          debugPrint(" عدد الأوجه المكتشفة: ${faces.length}");
           faces.length == 0 ? faceDetect = false : faceDetect = true;
           onFacesDetected(faces);
         } catch (e) {
-          debugPrint("❌ خطأ في تحليل الصورة: $e");
+          debugPrint(" خطأ في تحليل الصورة: $e");
         } finally {
           _isProcessing = false;
         }

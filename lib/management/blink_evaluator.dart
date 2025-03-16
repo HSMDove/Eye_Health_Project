@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'blink_counter.dart';
 import 'package:flutter/material.dart';
-import '../management/notification_manager.dart'; // ✅ استيراد مدير الإشعارات
+import '../management/notification_manager.dart'; //  كود الاشعارات
 
 class BlinkEvaluator {
   final BlinkCounter _blinkCounter;
@@ -49,14 +49,14 @@ class BlinkEvaluator {
     int currentBlinks = _blinkCounter.blinkCount;
     _blinkCounts.add(currentBlinks);
     _blinkCounter.resetCounter();
-    debugPrint("⏳ بعد $_elapsedTime ثانية، عدد الرمشات في الدورة: $currentBlinks");
+    debugPrint(" بعد $_elapsedTime ثانية، عدد الرمشات في الدورة: $currentBlinks");
   }
 
   void _evaluateBlinks() {
     if (_blinkCounts.isEmpty) return;
 
     double avgBlinks = averageBlinks;
-    debugPrint("📊 متوسط الرمشات خلال $_elapsedTime ثانية: ${avgBlinks.toStringAsFixed(2)}");
+    debugPrint(" متوسط الرمشات خلال $_elapsedTime ثانية: ${avgBlinks.toStringAsFixed(2)}");
 
     String evaluationMessage = _getBlinkEvaluation(avgBlinks);
     onEvaluationComplete(evaluationMessage);
@@ -75,17 +75,17 @@ class BlinkEvaluator {
 
   String _getBlinkEvaluation(double avgBlinks) {
     if (avgBlinks >= 6 && avgBlinks <= 20) {
-      return "✅ معدل الرمشات طبيعي";
+      return " معدل الرمشات طبيعي";
     } else if (avgBlinks < 6) {
-      return "⚠️ معدل الرمشات منخفض، قد تعاني من جفاف في العين!";
+      return " معدل الرمشات منخفض، قد تعاني من جفاف في العين!";
     } else {
-      return "⚠️ معدل الرمشات مرتفع، قد يكون لديك إجهاد بصري!";
+      return " معدل الرمشات مرتفع، قد يكون لديك إجهاد بصري!";
     }
   }
 
   void _sendBlinkNotification(String message) {
-    NotificationManager.sendNotification("📢 تقييم الرمشات", message);
-    debugPrint("🔔 تم إرسال إشعار: $message");
+    NotificationManager.sendNotification(" تقييم الرمشات", message);
+    debugPrint(" تم إرسال إشعار: $message");
   }
 
   void stopEvaluation() {

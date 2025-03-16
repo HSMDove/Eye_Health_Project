@@ -67,7 +67,7 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  // ✅ تحديث الوضع الليلي عند الرجوع من صفحة الإعدادات
+  // تفعيل الوضع الليلي
   Future<void> _navigateToSettings() async {
     bool? result = await Navigator.of(context).push(_createRoute());
     if (result != null) {
@@ -80,19 +80,21 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: darkMode ? const Color(0xFF222831) : const Color.fromARGB(255, 145, 195, 209),
+      backgroundColor: darkMode ? const Color(0xFF002134) : const Color.fromARGB(255, 145, 195, 209),
       appBar: AppBar(
-        backgroundColor: darkMode ? const Color(0xFF393E46) : const Color(0xff79a7b4),
+        backgroundColor: darkMode ? const Color(0xFF002134) : const Color(0xff79a7b4),
         centerTitle: true,
         title: Image.asset('assets/images/Icon.png', height: 50),
 
-        // ✅ زر الإعدادات مع التأثير
+        //  زر الإعدادات
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: _navigateToSettings,
           ),
         ],
+
+
       ),
       body: SafeArea(
         child: Column(
@@ -109,7 +111,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(200),
-                  color: darkMode ? const Color(0xFF393E46) : const Color(0xff79a7b4),
+                  color: darkMode ? const Color(0xFF032c42) : const Color(0xff79a7b4),
                 ),
                 child: const Text(
                   "لا يوجد وجه \n امام الكاميرا",
@@ -121,7 +123,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 height: 200,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(200),
-                  color: darkMode ? const Color(0xFF393E46) : const Color(0xff79a7b4),
+                  color: darkMode ? const Color(0xFF002134) : const Color(0xff79a7b4),
                 ),
                 child: ClipOval(
                   child: Transform(
@@ -163,44 +165,56 @@ class _CameraScreenState extends State<CameraScreen> {
                 ],
               ),
             ),
-
-            // ✅ إعادة زر إيقاف التشغيل
+            Spacer(flex: 1,),
+            // زر ايقاف التشغيل
             Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: darkMode ? const Color(0xFF393E46) : const Color(0xff79a7b4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      side: const BorderSide(color: Color(0xFF00ADB5), width: 3),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 10,
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.7, // تقليل عرض الزر
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: (darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4))
+                            .withOpacity(0.35), // إضافة وهج بنفس لون الزر
+                        blurRadius: 30,
+                        spreadRadius: 1,
+                        //offset: const Offset(0, 5), // اتجاه الظل للأسفل
+                      ),
+                    ],
                   ),
-                  onPressed: () {
-                    // ✅ إيقاف تشغيل التطبيق أو أي إجراء آخر
-                    debugPrint("🚀 تم الضغط على زر إيقاف التشغيل!");
-                  },
-                  child: const Text(
-                    "إيقاف التشغيل",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      elevation: 10, //
+                    ),
+                    onPressed: () {
+                      debugPrint("تم الضغط على زر إيقاف التشغيل");
+                    },
+                    child: const Text(
+                      "إيقاف التشغيل",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+            Spacer(flex: 1,),
           ],
         ),
       ),
     );
   }
 
-  // ✅ تحسين التعديل على الإعدادات وإصلاح الخطأ
+  //  تحسين التعديل على الإعدادات وإصلاح الخطأ
   Route<bool> _createRoute() {
     return PageRouteBuilder<bool>(
       pageBuilder: (context, animation, secondaryAnimation) => const SettingsScreen(),
@@ -221,9 +235,9 @@ class _CameraScreenState extends State<CameraScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: darkMode ? const Color(0xFF393E46) : const Color(0xff79a7b4),
+          color: darkMode ? const Color(0xFF032c42) : const Color(0xff79a7b4),
           borderRadius: BorderRadius.circular(40),
-          border: Border.all(color: const Color(0xFF00ADB5), width: 2),
+          //border: Border.all(color: const Color(0xFF00ADB5), width: 2),
         ),
         child: Text(
           text,

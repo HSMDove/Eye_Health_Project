@@ -27,10 +27,10 @@ class FaceDetectionManager {
         _blinkCounter.updateBlinkCount(faces.first);
       }
 
-      debugPrint("🧐 ML Kit تعرف على ${faces.length} وجه!");
+      debugPrint(" ML Kit تعرف على ${faces.length} وجه!");
       return faces;
     } catch (e) {
-      debugPrint("❌ خطأ في كشف الوجه: $e");
+      debugPrint(" خطأ في كشف الوجه: $e");
       return [];
     }
   }
