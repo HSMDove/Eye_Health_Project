@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:eye_health/widgets/ui_elements.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,20 +71,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         },
         children: [
           _buildPage(
-            title: "مرحبًا بك في تطبيق صحة العين!",
-            description: "تطبيق يساعدك على مراقبة صحة عينيك من خلال تحليل معدل الرمشات.",
+            title:  "welcome".tr(),
+            description:  "description".tr(),
             image: "assets/images/eye_image.png",
             buttonRow: _buildNextButton(),
           ),
           _buildPage(
-            title: "كيف يعمل التطبيق؟",
-            description: "التطبيق يقوم بحساب عدد رمشاتك من خلال الكاميرا , ثم يقيم و يحلل هذه الرمشات , وسيتم تنبيهك بحالة رمشاتك",
+            title:   "howItWorks".tr(),
+            description: "blinkAnalysis".tr(),
             image: "assets/images/count_image.png",
             buttonRow: _buildNavigationButtons(),
           ),
           _buildPage(
-            title: "جاهز للبدء؟",
-            description: "اضغط على الزر أدناه للانتقال إلى التطبيق والبدء في استخدامه!",
+            title:   "readyToStart".tr(),
+            description:  "buttonInstruction".tr(),
             image: "assets/images/next_image.png",
             buttonRow: _buildNavigationButtons(isFinal: true),
           ),
@@ -143,7 +144,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   Widget _buildNextButton() {
     return Center(
       child: _buildCustomButton(
-        label: "التالي",
+        label: "next".tr(),
         onPressed: () {
           if (_currentPage < 2) {
             _animationController.reverse().then((_) {
@@ -164,7 +165,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildCustomButton(
-          label: "رجوع",
+          label: "back".tr(),
           onPressed: () {
             if (_currentPage > 0) {
               _animationController.reverse().then((_) {
@@ -177,7 +178,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           },
         ),
         _buildCustomButton(
-          label: isFinal ? "ابدأ استخدام التطبيق" : "التالي",
+          label: isFinal ?"startUsingApp".tr() : "next".tr(),
           onPressed: isFinal
               ? () {
             _animationController.reverse().then((_) {
@@ -214,7 +215,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: label == "ابدأ استخدام التطبيق" ? const Color(0xFFFFA08C) : const Color(0xFF002134),
+          backgroundColor: label ==  "startUsingApp".tr() ? const Color(0xFFFFA08C) : const Color(0xFF002134),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
             side: const BorderSide(color: Color(0xFFFFA08C), width: 2),
@@ -227,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         child: Text(
           label,
           style: TextStyle(
-            color: label == "ابدأ استخدام التطبيق" ? const Color(0xFF002134) : const Color(0xFFFFA08C),
+            color: label ==  "startUsingApp".tr() ? const Color(0xFF002134) : const Color(0xFFFFA08C),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),

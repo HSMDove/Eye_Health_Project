@@ -1,4 +1,5 @@
 // ----- استيراد الحزم والملفات اللازمة ----- //
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../management/camera_manager.dart';
@@ -21,9 +22,19 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
   BlinkCounter blinkCounter = BlinkCounter();
   late BlinkEvaluator blinkEvaluator;
-  String blinkStatus = "يتم الحساب...";
+  String blinkStatus =   "";
   bool darkMode = false;
   late CameraManager cm;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (blinkStatus.isEmpty) {
+      setState(() {
+        blinkStatus = "calculating".tr();
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -113,8 +124,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   borderRadius: BorderRadius.circular(200),
                   color: darkMode ? const Color(0xFF032c42) : const Color(0xff79a7b4),
                 ),
-                child: const Text(
-                  "لا يوجد وجه \n امام الكاميرا",
+                child:  Text(
+                  "no_face_detected".tr(),
                   style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
                 ),
               )
@@ -155,13 +166,16 @@ class _CameraScreenState extends State<CameraScreen> {
               child: Column(
                 children: [
                   _buildInfoBox(
-                      "سيتم التقييم بعد ${blinkEvaluator.evaluationDurationSeconds - blinkEvaluator.elapsedSeconds} ثانية\n"
-                          "عدد الرمشات: ${blinkCounter.blinkCount} \n"
-                          "متوسط الرمشات: ${blinkEvaluator.averageBlinks.toStringAsFixed(2)}"
+                      "${"start_evaluation_soon".tr()
+                          + "${blinkEvaluator.evaluationDurationSeconds - blinkEvaluator.elapsedSeconds}"
+                      }\n"
+                          "${"blink_count".tr() +"${blinkCounter.blinkCount}"}\n"
+                          "${"blink_average".tr() +"${blinkEvaluator.averageBlinks.toStringAsFixed(2)}"}"
                   ),
-                  _buildInfoBox("حالة الرمشات: $blinkStatus"),
-                  _buildInfoBox(
-                      "👁 العين اليمنى: ${blinkCounter.rightEyeStatus}\n👁 العين اليسرى: ${blinkCounter.leftEyeStatus}"),
+                  _buildInfoBox("${"blink_status".tr() + "${blinkStatus}"}"),
+                  _buildInfoBox("${"right_eye".tr()+ " ${blinkCounter.rightEyeStatus}\n"+
+                                    "left_eye".tr()+ " ${blinkCounter.leftEyeStatus}" }"),
+
                 ],
               ),
             ),
@@ -195,8 +209,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     onPressed: () {
                       debugPrint("تم الضغط على زر إيقاف التشغيل");
                     },
-                    child: const Text(
-                      "إيقاف التشغيل",
+                    child:  Text(
+                      "power_off".tr(),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,

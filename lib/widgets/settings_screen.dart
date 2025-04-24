@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-
+import 'package:easy_localization/easy_localization.dart';
+import 'package:restart_app/restart_app.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -92,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: darkMode ? const Color(0xFF002134) : const Color.fromARGB(255, 145, 195, 209),
       appBar: AppBar(
         backgroundColor: darkMode ? const Color(0xFF002134) : const Color(0xff79a7b4),
-        title: const Text("الإعدادات", style: TextStyle(color: Colors.white)),
+        title:  Text("settings".tr(), style: TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context, darkMode),
@@ -105,19 +106,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             SwitchListTile(
               activeColor: const Color(0xFFffa08c),
-              title: const Text("الوضع الليلي", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              title:  Text("dark_mode".tr(), style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               value: darkMode,
               onChanged: _updateDarkMode,
             ),
             SwitchListTile(
               activeColor: const Color(0xFFffa08c),
-              title: const Text("تشغيل التطبيق في الخلفية", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              title:  Text("notification_interval".tr(), style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               value: isBackgroundServiceRunning,
               onChanged: _updateNotifications,
             ),
             SwitchListTile(
               activeColor: const Color(0xFFffa08c),
-              title: const Text("تفعيل الإشعارات", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              title:  Text("notifications_enabled".tr(), style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               value: notificationsEnabled,
               onChanged: _updateNotifications,
             ),
@@ -125,10 +126,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             /// **خط فاصل بين الإعدادات السابقة والإعدادات التالية**
             const Divider(color: Colors.white, thickness: 2, height: 30),
 
-            _buildSliderRow("مدة إرسال الإشعارات:", notificationInterval, 5, 40, 7, _updateNotificationInterval, _getSliderColor),
-            _buildSliderRow("وقت حساب الرمشات:", blinkCalculationTime, 30, 90, 2, _updateBlinkCalculationTime, _getBlinkSliderColor),
+            _buildSliderRow("notification_interval".tr(), notificationInterval, 5, 40, 7, _updateNotificationInterval, _getSliderColor),
+            _buildSliderRow("blink_calculation_pause".tr() ,blinkCalculationTime, 30, 90, 2, _updateBlinkCalculationTime, _getBlinkSliderColor),
 
-            /// **خط فاصل جديد قبل خيار اللغة**
+            /// **خط فاصل جديد قبل خيار اللغة** **خط فاصل جديد قبل خيار اللغة**
             const Divider(color: Colors.white, thickness: 2, height: 30),
 
             /// **اختيار اللغة**
@@ -137,8 +138,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "اللغة:",
+                   Text(
+                    "language".tr(),
                     style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   DropdownButton<String>(
@@ -156,13 +157,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
-                        _updateLanguage(newValue);
+                        if (newValue == "العربية") {
+                          context.setLocale(const Locale('ar'));
+                          Restart.restartApp();
+                        } else if (newValue == "English") {
+                          context.setLocale(const Locale('en'));
+                          Restart.restartApp();
+
+                        }
                       }
                     },
+
                   ),
                 ],
               ),
             ),
+
           ],
         ),
       ),

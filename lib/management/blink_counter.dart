@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 
@@ -6,8 +7,8 @@ class BlinkCounter {
   bool isBothEyesClosed = false; // متغير لمعرفة إذا كانت العينان مغلقتين تمامًا
   int blinkCooldown = 0; // يستخدم لمنع تسجيل رمشات متتالية خاطئة
 
-  String rightEyeStatus = "مفتوحة"; // حالة العين اليمنى حاليًا
-  String leftEyeStatus = "مفتوحة"; // حالة العين اليسرى حاليًا
+  String rightEyeStatus = "open".tr(); // حالة العين اليمنى حاليًا
+  String leftEyeStatus = "open".tr();// حالة العين اليسرى حاليًا
 
   double previousLeftEyeOpen = 1.0; // تتبع حالة العين اليسرى من الإطار السابق
   double previousRightEyeOpen = 1.0; // تتبع حالة العين اليمنى من الإطار السابق
@@ -20,8 +21,8 @@ class BlinkCounter {
     final rightEyeOpen = face.rightEyeOpenProbability ?? 1.0; // نسبة فتح العين اليمنى
 
     // تحديث حالة كل عين بناءً على نسبة الفتح
-    rightEyeStatus = leftEyeOpen < 0.15 ? "مغلقة" : "مفتوحة";
-    leftEyeStatus = rightEyeOpen < 0.15 ? "مغلقة" : "مفتوحة";
+    rightEyeStatus = leftEyeOpen < 0.15 ? "closed".tr() : "open".tr();
+    leftEyeStatus = rightEyeOpen < 0.15 ?  "closed".tr() : "open".tr();
 
     // التحقق مما إذا كانت **العينان مغلقتين بالكامل** أو **عين واحدة مغلقة**
     final bool areEyesClosed = (leftEyeOpen < 0.15 && rightEyeOpen < 0.15);
@@ -65,8 +66,8 @@ class BlinkCounter {
   void resetCounter() {
     blinkCount = 0;
     isBothEyesClosed = false;
-    rightEyeStatus = "مفتوحة";
-    leftEyeStatus = "مفتوحة";
+    rightEyeStatus = "open".tr();
+    leftEyeStatus = "open".tr();
     previousLeftEyeOpen = 1.0;
     previousRightEyeOpen = 1.0;
     blinkCooldown = 0;

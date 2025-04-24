@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
+
 import 'blink_counter.dart';
 import 'package:flutter/material.dart';
 import '../management/notification_manager.dart'; //  كود الاشعارات
@@ -75,11 +77,11 @@ class BlinkEvaluator {
 
   String _getBlinkEvaluation(double avgBlinks) {
     if (avgBlinks >= 6 && avgBlinks <= 20) {
-      return " معدل الرمشات طبيعي";
+      return   "normal_blink_rate".tr();
     } else if (avgBlinks < 6) {
-      return " معدل الرمشات منخفض، قد تعاني من جفاف في العين!";
+      return "low_blink_rate_warning".tr();
     } else {
-      return " معدل الرمشات مرتفع، قد يكون لديك إجهاد بصري!";
+      return   "high_blink_rate_warning".tr();
     }
   }
 
