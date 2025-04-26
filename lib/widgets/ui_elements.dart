@@ -30,7 +30,7 @@ class _CameraScreenState extends State<CameraScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (blinkStatus.isEmpty) {
-      setState(() {
+      setState( () {
         blinkStatus = "calculating".tr();
       });
     }

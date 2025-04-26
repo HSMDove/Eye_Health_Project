@@ -28,10 +28,5 @@
   "next": "Next",
   "back": "Back",
   "startUsingApp": "Start using the app",
-  "blinkAnalysis": "The app counts your blinks using the camera, analyzes them, and alerts you about your blinking status",
-  "power_off": "إيقاف التشغيل",
-  "confirm": "تأكيد",
-  "are_you_sure_shutdown": "هل أنت متأكد أنك تريد إيقاف خدمة الخلفية؟",
-  "cancel": "إلغاء",
-  "yes": "نعم"
+  "blinkAnalysis": "The app counts your blinks using the camera, analyzes them, and alerts you about your blinking status"
 }

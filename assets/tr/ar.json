@@ -28,11 +28,5 @@
   "next": "التالي",
   "back": "رجوع",
   "startUsingApp": "ابدأ استخدام التطبيق",
-  "blinkAnalysis": "التطبيق يقوم بحساب عدد رمشاتك من خلال الكاميرا، ثم يقيم ويحلل هذه الرمشات، وسيتم تنبيهك بحالة رمشاتك",
-  "power_off": "Power Off",
-  "confirm": "Confirmation",
-  "are_you_sure_shutdown": "Are you sure you want to shut down the background service?",
-  "cancel": "Cancel",
-  "yes": "Yes"
-
+  "blinkAnalysis": "التطبيق يقوم بحساب عدد رمشاتك من خلال الكاميرا، ثم يقيم ويحلل هذه الرمشات، وسيتم تنبيهك بحالة رمشاتك"
 }
