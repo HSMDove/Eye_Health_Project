@@ -1,73 +1,71 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 
 class BlinkCounter {
   int blinkCount = 0; // عدد الرمشات المسجلة
-  bool isBothEyesClosed = false; // متغير لمعرفة إذا كانت العينان مغلقتين تمامًا
-  int blinkCooldown = 0; // يستخدم لمنع تسجيل رمشات متتالية خاطئة
+  bool isBothEyesClosed = false;
+  int blinkCooldown = 0; // تأخير بسيط بين الرمشات
 
-  String rightEyeStatus = "open".tr(); // حالة العين اليمنى حاليًا
-  String leftEyeStatus = "open".tr();// حالة العين اليسرى حاليًا
+  String rightEyeStatus = "-"; // حالة العين اليمنى مبدئيًا
+  String leftEyeStatus = "-"; // حالة العين اليسرى مبدئيًا
 
-  double previousLeftEyeOpen = 1.0; // تتبع حالة العين اليسرى من الإطار السابق
-  double previousRightEyeOpen = 1.0; // تتبع حالة العين اليمنى من الإطار السابق
+  double previousLeftEyeOpen = 1.0;
+  double previousRightEyeOpen = 1.0;
 
-  bool allowSingleEyeBlink = true; //  متغير للتحكم في احتساب رمشة العين الواحدة
+  bool allowSingleEyeBlink = true; // تحكم إذا نحسب رمشة عين واحدة أو عينتين
+  double blinkThreshold = 0.15; // 🔥 أفضل قيمة للكشف عن الإغلاق
 
-  /// تحديث عدد الرمشات بناءً على بيانات الوجه اللي تجي من الكاميرا
+  /// تحديث عدد الرمشات بناءً على بيانات الوجه من الكاميرا
   void updateBlinkCount(Face face) {
-    final leftEyeOpen = face.leftEyeOpenProbability ?? 1.0; // نسبة فتح العين اليسرى
-    final rightEyeOpen = face.rightEyeOpenProbability ?? 1.0; // نسبة فتح العين اليمنى
+    final leftEyeOpen = face.leftEyeOpenProbability ?? 1.0;
+    final rightEyeOpen = face.rightEyeOpenProbability ?? 1.0;
 
-    // تحديث حالة كل عين بناءً على نسبة الفتح
-    rightEyeStatus = leftEyeOpen < 0.15 ? "closed".tr() : "open".tr();
-    leftEyeStatus = rightEyeOpen < 0.15 ?  "closed".tr() : "open".tr();
+    // تحديث حالة العينين بدون ترجمة
+    rightEyeStatus = rightEyeOpen < blinkThreshold ? "closed" : "open";
+    leftEyeStatus  = leftEyeOpen  < blinkThreshold ? "closed" : "open";
 
-    // التحقق مما إذا كانت **العينان مغلقتين بالكامل** أو **عين واحدة مغلقة**
-    final bool areEyesClosed = (leftEyeOpen < 0.15 && rightEyeOpen < 0.15);
-    final bool isSingleEyeClosed = (leftEyeOpen < 0.15 || rightEyeOpen < 0.15);
+    // Debugging لمراقبة القيم أثناء الفتح والإغلاق
+    debugPrint('Left eye open: $leftEyeOpen, Right eye open: $rightEyeOpen');
+
+    final bool areEyesClosed = (leftEyeOpen < blinkThreshold && rightEyeOpen < blinkThreshold);
+    final bool isSingleEyeClosed = (leftEyeOpen < blinkThreshold || rightEyeOpen < blinkThreshold);
     final bool areEyesOpen = (leftEyeOpen > 0.6 && rightEyeOpen > 0.6);
 
-    // احتساب الرمشات حسب الإعداد
     if (allowSingleEyeBlink) {
-      //  الوضع: احتساب الرمشات حتى لو كانت بعين واحدة
       if (isSingleEyeClosed) {
         isBothEyesClosed = true;
       } else if (isBothEyesClosed && areEyesOpen && blinkCooldown == 0) {
         blinkCount++;
         isBothEyesClosed = false;
-        blinkCooldown = 2;
-        debugPrint("عدد الرمشات: $blinkCount");
+        blinkCooldown = 2; // فترة راحة بعد كل رمشة
+        debugPrint("🔵 عدد الرمشات: $blinkCount");
       }
     } else {
-      //  الوضع الطبيعي: احتساب الرمشات فقط إذا كانت **العينان مغلقتين**
       if (areEyesClosed) {
         isBothEyesClosed = true;
       } else if (isBothEyesClosed && areEyesOpen && blinkCooldown == 0) {
         blinkCount++;
         isBothEyesClosed = false;
         blinkCooldown = 2;
-        debugPrint("عدد الرمشات: $blinkCount");
+        debugPrint("🟢 عدد الرمشات: $blinkCount");
       }
     }
 
-    // تقليل فترة التبريد بعد كل تحديث لتجنب الحساب الخاطئ
     if (blinkCooldown > 0) {
       blinkCooldown--;
     }
 
-    // تحديث القيم السابقة للعينين للإطار القادم
     previousLeftEyeOpen = leftEyeOpen;
     previousRightEyeOpen = rightEyeOpen;
   }
 
-  /// إعادة تعيين العداد وإرجاع القيم لوضعها الافتراضي
+  /// إعادة ضبط العداد عند الحاجة
   void resetCounter() {
     blinkCount = 0;
     isBothEyesClosed = false;
-    rightEyeStatus = "open".tr();
-    leftEyeStatus = "open".tr();
+    rightEyeStatus = "-";
+    leftEyeStatus = "-";
     previousLeftEyeOpen = 1.0;
     previousRightEyeOpen = 1.0;
     blinkCooldown = 0;

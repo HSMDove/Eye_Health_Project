@@ -28,5 +28,24 @@
   "next": "التالي",
   "back": "رجوع",
   "startUsingApp": "ابدأ استخدام التطبيق",
-  "blinkAnalysis": "التطبيق يقوم بحساب عدد رمشاتك من خلال الكاميرا، ثم يقيم ويحلل هذه الرمشات، وسيتم تنبيهك بحالة رمشاتك"
+  "blinkAnalysis": "التطبيق يقوم بحساب عدد رمشاتك من خلال الكاميرا، ثم يقيم ويحلل هذه الرمشات، وسيتم تنبيهك بحالة رمشاتك",
+  "blinking_paused": "تم إيقاف حساب الرمش.",
+  "blinking_resumed": "تم استئناف حساب الرمش.",
+  "seconds_remaining": "ثواني متبقية",
+  "try_facing_camera": "حاول توجيه وجهك نحو الكاميرا",
+  "language_changed": "تم تغيير اللغة بنجاح",
+  "eye_health_reminder": "تذكير بصحة العين",
+  "remember_to_blink": "تذكر أن ترمش وترتاح!",
+  "notification_disabled": "تم تعطيل الإشعارات.",
+  "notification_enabled": "تم تفعيل الإشعارات.",
+  "notification_interval_updated": "تم تحديث الفاصل الزمني للإشعارات.",
+  "app_restart_required": "سيُعاد تشغيل التطبيق لتطبيق التغييرات.",
+  "face_not_detected": "لم يتم اكتشاف وجه.",
+  "face_detected": "تم اكتشاف وجه.",
+  "pause_blinking_monitoring": "إيقاف مراقبة الرمشات.",
+  "resume_blinking_monitoring": "استئناف مراقبة الرمشات.",
+  "error_detecting_face": "حدث خطأ في اكتشاف الوجه، يرجى المحاولة مرة أخرى."
+
+
+
 }

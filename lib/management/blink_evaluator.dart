@@ -1,21 +1,38 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blink_counter.dart';
 import 'package:flutter/material.dart';
-import '../management/notification_manager.dart'; //  كود الاشعارات
+import '../management/notification_manager.dart';
+import 'blink_evaluator_service.dart'; //  كود الاشعارات
 
 class BlinkEvaluator {
   final BlinkCounter _blinkCounter;
-  final int intervalSeconds; // الزمن لكل دورة (مثلاً 60 ثانية)
-  final int evaluationDurationSeconds; // الزمن الإجمالي للتقييم (مثلاً 2 دقيقة)
-  final Function(String) onEvaluationComplete; // تمرير النتيجة
+   int intervalSeconds; // الزمن لكل دورة (مثلاً 60 ثانية)
+   int evaluationDurationSeconds; // الزمن الإجمالي للتقييم (مثلاً 2 دقيقة)
+   Function(String) onEvaluationComplete; // تمرير النتيجة
+  BlinkCounter get blinkCounter => _blinkCounter;
 
   List<int> _blinkCounts = []; // تخزين عدد الرمشات لكل 60 ثانية
   Timer? _timer;
   Timer? _secondTimer;
   int _elapsedTime = 0;
   int _currentCycleTime = 0; // لحساب الثواني تدريجيًا داخل 60 ثانية
+
+
+  void updateTimings({required int newIntervalSeconds, required int newEvaluationDurationSeconds}) {
+    intervalSeconds = newIntervalSeconds;
+    evaluationDurationSeconds = newEvaluationDurationSeconds;
+    debugPrint("✅ تم تحديث التوقيتات: interval=$intervalSeconds ثانية, duration=$evaluationDurationSeconds ثانية");
+    debugPrint("♻️ جاري إعادة تشغيل التقييم بعد تحديث الزمن...");
+
+    stopEvaluation();
+    startEvaluation();
+  }
+
+
+
 
   BlinkEvaluator({
     required this.onEvaluationComplete,
@@ -34,6 +51,11 @@ class BlinkEvaluator {
       _elapsedTime++;
       _currentCycleTime++;
 
+      // 🔥 هنا نحدث الحالة كل ثانية
+      onEvaluationComplete(
+          "${"calculating".tr()} (${evaluationDurationSeconds - _elapsedTime} ${"seconds_remaining".tr()})"
+      );
+
       if (_currentCycleTime >= intervalSeconds) {
         _recordBlinkCount();
         _currentCycleTime = 0; // إعادة ضبط عداد الدورة
@@ -46,6 +68,7 @@ class BlinkEvaluator {
       }
     });
   }
+
 
   void _recordBlinkCount() {
     int currentBlinks = _blinkCounter.blinkCount;

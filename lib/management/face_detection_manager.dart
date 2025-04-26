@@ -2,47 +2,40 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:camera/camera.dart';
 import 'dart:typed_data';
-import 'blink_counter.dart'; //
 
 class FaceDetectionManager {
   final FaceDetector _faceDetector;
-  final BlinkCounter _blinkCounter = BlinkCounter(); // نسوي اوبجكت من الـ BlinkCounter
 
   FaceDetectionManager()
       : _faceDetector = GoogleMlKit.vision.faceDetector(
     FaceDetectorOptions(
-      //enableContours: true, // عشان رسم ملامح الوجه
-      enableClassification: true, // لحالة العين
-      enableLandmarks: true, // عشان نعرف مكان العين
+      enableClassification: true,
+      enableLandmarks: true,
     ),
   );
 
+  /// 🔥 فقط يكشف الوجوه بدون أي تحديث رمش هنا
   Future<List<Face>> detectFaces(CameraImage image, CameraDescription camera) async {
     try {
       final inputImage = _convertCameraImage(image, camera);
       final faces = await _faceDetector.processImage(inputImage);
 
-      //  تحديث عداد الرمشات لكل وجه مكتشف
-      if (faces.isNotEmpty) {
-        _blinkCounter.updateBlinkCount(faces.first);
-      }
-
-      debugPrint(" ML Kit تعرف على ${faces.length} وجه!");
+      debugPrint("ML Kit تعرف على ${faces.length} وجه!");
       return faces;
     } catch (e) {
-      debugPrint(" خطأ في كشف الوجه: $e");
+      debugPrint("خطأ في كشف الوجه: $e");
       return [];
     }
   }
 
-  // نرجع عدد الرمشات
-  int getBlinkCount() {
-    return _blinkCounter.blinkCount;
-  }
+  /// 🔥 وظيفة إضافية لو بغيت تتحقق من وجود عينين
+  bool hasEyes(List<Face> faces) {
+    if (faces.isEmpty) return false;
+    final Face face = faces.first;
+    final leftEye = face.landmarks[FaceLandmarkType.leftEye];
+    final rightEye = face.landmarks[FaceLandmarkType.rightEye];
 
-  // دالة لإعادة ضبط الرمسات
-  void resetBlinkCount() {
-    _blinkCounter.resetCounter();
+    return leftEye != null && rightEye != null;
   }
 
   InputImage _convertCameraImage(CameraImage image, CameraDescription camera) {
@@ -62,15 +55,6 @@ class FaceDetectionManager {
       bytes: Uint8List.fromList(allBytes),
       metadata: inputImageMetadata,
     );
-  }
-
-  bool hasEyes(List<Face> faces) {
-    if (faces.isEmpty) return false;
-    final Face face = faces.first;
-    final leftEye = face.landmarks[FaceLandmarkType.leftEye];
-    final rightEye = face.landmarks[FaceLandmarkType.rightEye];
-
-    return leftEye != null && rightEye != null;
   }
 
   InputImageRotation _rotationIntToImageRotation(int rotation) {

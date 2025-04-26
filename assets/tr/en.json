@@ -1,5 +1,5 @@
 {
-  "no_face_detected": "No face detected in front of the camera",
+  "no_face_detected": "No face detected",
   "start_evaluation_soon": "Evaluation will start in a second",
   "blink_count": "Blink Count : ",
   "blink_average": "Average Blinks : ",
@@ -28,5 +28,23 @@
   "next": "Next",
   "back": "Back",
   "startUsingApp": "Start using the app",
-  "blinkAnalysis": "The app counts your blinks using the camera, analyzes them, and alerts you about your blinking status"
+  "blinkAnalysis": "The app counts your blinks using the camera, analyzes them, and alerts you about your blinking status",
+  "blinking_paused": "Blink calculation paused.",
+  "blinking_resumed": "Blink calculation resumed.",
+  "seconds_remaining": "seconds remaining",
+  "try_facing_camera": "Try facing the camera",
+  "language_changed": "Language changed successfully",
+  "eye_health_reminder": "Eye Health Reminder",
+  "remember_to_blink": "Remember to blink and relax your eyes!",
+  "notification_disabled": "Notifications are disabled.",
+  "notification_enabled": "Notifications are enabled.",
+  "notification_interval_updated": "Notification interval updated",
+  "app_restart_required": "The app will restart to apply changes.",
+  "face_not_detected": "Face not detected",
+  "face_detected": "Face detected",
+  "pause_blinking_monitoring": "Pause Blinking Monitoring",
+  "resume_blinking_monitoring": "Resume Blinking Monitoring",
+  "error_detecting_face": "Error detecting face, please try again."
+
+
 }
