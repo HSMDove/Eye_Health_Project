@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blink_counter.dart';
 import 'package:flutter/material.dart';
 import '../management/notification_manager.dart';
-import 'blink_evaluator_service.dart'; //  كود الاشعارات
+//  كود الاشعارات
 
 class BlinkEvaluator {
   final BlinkCounter _blinkCounter;

@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,9 @@ class _CameraScreenState extends State<CameraScreen> {
   bool darkMode = false;
   bool isBlinking = true;
   late CameraManager cm;
+  
+  //خاص بالPiP
+  final floating = Floating();
 
   @override
   void initState() {
@@ -29,6 +33,8 @@ class _CameraScreenState extends State<CameraScreen> {
     cm = widget.cameraManager;
     blinkEvaluatorService = BlinkEvaluatorService.instance;
 
+    //النافذة اللي تظهر عند الخروج من البرنامج واعدادات ابعادها ومكان ظهورها
+    floating.enable(OnLeavePiP(aspectRatio: Rational.vertical()));
     _initializeCamera();
     _loadSettings();
 
@@ -68,7 +74,15 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PiPSwitcher(
+      //الواجهه الصغيرة اللي تظهر لما الشخص يخرج من البرنامج
+      childWhenEnabled: Scaffold(
+        body:(cm.faceDetect == false
+          ? _buildFaceNotDetected()
+          : _buildCameraPreview()),
+          backgroundColor: darkMode ? const Color(0xFF032c42) : const Color(0xff79a7b4)
+        ),
+      childWhenDisabled: Scaffold(
       backgroundColor: darkMode ? const Color(0xFF002134) : const Color.fromARGB(255, 145, 195, 209),
       appBar: AppBar(
         backgroundColor: darkMode ? const Color(0xFF002134) : const Color(0xff79a7b4),
@@ -100,7 +114,7 @@ class _CameraScreenState extends State<CameraScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildFaceNotDetected() {

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_..." />
+    
     <application
         android:label="Eye Health"
         android:icon="@mipmap/launcher_icon"
@@ -29,8 +30,8 @@
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden"
-            android:windowSoftInputMode="adjustResize">
-
+            android:windowSoftInputMode="adjustResize"
+            android:supportsPictureInPicture="true">
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>

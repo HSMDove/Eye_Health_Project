@@ -4,8 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:camera/camera.dart';
 import 'package:eye_health/management/camera_manager.dart';
 import 'package:eye_health/management/face_detection_manager.dart';
-import 'package:eye_health/widgets/onboarding_screen.dart';
-import 'package:eye_health/widgets/ui_elements.dart'; // فيه CameraScreen
+// فيه CameraScreen
 import 'package:shared_preferences/shared_preferences.dart';
 
 late CameraDescription frontCamera;

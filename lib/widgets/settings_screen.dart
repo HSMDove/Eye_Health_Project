@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:restart_app/restart_app.dart';
 import '../management/blink_evaluator_service.dart'; // غير المسار حسب مشروعك
 
 class SettingsScreen extends StatefulWidget {
