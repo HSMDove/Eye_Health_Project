@@ -1,17 +1,22 @@
 import 'package:permission_handler/permission_handler.dart';
 
-class PermissionManager{
-  static Future<void> requestCameraPermission() async{
-    final status = await Permission.camera.request();
+class PermissionManager {
+  static Future<void> requestCameraPermission() async {
+    final cameraStatus = await Permission.camera.request();
+    final micStatus = await Permission.microphone.request();
 
-    if(status.isDenied){
-      throw Exception('Camera permission is denied. Please enable it in settings.');
-    } else if (status.isPermanentlyDenied){
-      throw Exception('Camera permission is permanently denied. Please enable it in settings.');
+    if (cameraStatus.isDenied || micStatus.isDenied) {
+      throw Exception('❌ صلاحية الكاميرا أو المايك مرفوضة. الرجاء تفعيلها من الإعدادات.');
+    } else if (cameraStatus.isPermanentlyDenied || micStatus.isPermanentlyDenied) {
+      throw Exception('🚫 صلاحية الكاميرا أو المايك مرفوضة نهائيًا. فعّلها يدويًا من إعدادات الجهاز.');
     }
   }
 
   static Future<bool> isCameraPermissionGranted() async {
     return await Permission.camera.isGranted;
+  }
+
+  static Future<bool> isMicrophonePermissionGranted() async {
+    return await Permission.microphone.isGranted;
   }
 }

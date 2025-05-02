@@ -1,4 +1,4 @@
-import 'blink_counter.dart';
+/*import 'blink_counter.dart';
 import 'blink_evaluator.dart';
 
 class BlinkEvaluatorService {
@@ -25,4 +25,4 @@ class BlinkEvaluatorService {
       newEvaluationDurationSeconds: newEvaluationDurationSeconds,
     );
   }
-}
+}*/

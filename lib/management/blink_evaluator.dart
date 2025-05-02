@@ -1,37 +1,26 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'blink_counter.dart';
-import 'package:flutter/material.dart';
 import '../management/notification_manager.dart';
-//  كود الاشعارات
 
 class BlinkEvaluator {
   final BlinkCounter _blinkCounter;
-   int intervalSeconds; // الزمن لكل دورة (مثلاً 60 ثانية)
-   int evaluationDurationSeconds; // الزمن الإجمالي للتقييم (مثلاً 2 دقيقة)
-   Function(String) onEvaluationComplete; // تمرير النتيجة
+  int intervalSeconds;
+  int evaluationDurationSeconds;
+  Function(String) onEvaluationComplete;
+
   BlinkCounter get blinkCounter => _blinkCounter;
 
-  List<int> _blinkCounts = []; // تخزين عدد الرمشات لكل 60 ثانية
-  Timer? _timer;
+  List<int> _blinkCounts = [];
   Timer? _secondTimer;
   int _elapsedTime = 0;
-  int _currentCycleTime = 0; // لحساب الثواني تدريجيًا داخل 60 ثانية
-
-
-  void updateTimings({required int newIntervalSeconds, required int newEvaluationDurationSeconds}) {
-    intervalSeconds = newIntervalSeconds;
-    evaluationDurationSeconds = newEvaluationDurationSeconds;
-    debugPrint("✅ تم تحديث التوقيتات: interval=$intervalSeconds ثانية, duration=$evaluationDurationSeconds ثانية");
-    debugPrint("♻️ جاري إعادة تشغيل التقييم بعد تحديث الزمن...");
-
-    stopEvaluation();
-    startEvaluation();
-  }
-
-
-
+  int _currentCycleTime = 0;
+  int _notificationCycleCount = 0;
+  bool _isEvaluating = false;
+  int notificationIntervalMinutes = 15; // ← من الإعدادات
 
   BlinkEvaluator({
     required this.onEvaluationComplete,
@@ -40,81 +29,113 @@ class BlinkEvaluator {
     this.evaluationDurationSeconds = 60,
   }) : _blinkCounter = blinkCounter;
 
-  void startEvaluation() {
-    _timer?.cancel();
-    _secondTimer?.cancel();
-    _resetEvaluation(); // إعادة ضبط القيم
+  Future<void> loadTimingsFromSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    intervalSeconds = prefs.getDouble('blinkCalculationTime')?.toInt() ?? 60;
+    evaluationDurationSeconds = intervalSeconds;
+    notificationIntervalMinutes = prefs.getDouble('notificationInterval')?.toInt() ?? 15;
 
-    // 🔹 تحديث الثواني كل ثانية تدريجيًا
+    debugPrint("✅ [Evaluator] تحميل الإعدادات: interval=$intervalSeconds, notif=$notificationIntervalMinutes min");
+  }
+
+  void updateTimings({required int newIntervalSeconds, required int newEvaluationDurationSeconds, required int newNotificationMinutes}) {
+    intervalSeconds = newIntervalSeconds;
+    evaluationDurationSeconds = newEvaluationDurationSeconds;
+    notificationIntervalMinutes = newNotificationMinutes;
+
+    debugPrint("✅ [Evaluator] تحديث يدوي: interval=$intervalSeconds, duration=$evaluationDurationSeconds, notif=$notificationIntervalMinutes min");
+    stopEvaluation();
+    startEvaluation();
+  }
+
+  void startEvaluation() async {
+    if (_isEvaluating) {
+      debugPrint("⛔ [Evaluator] يعمل مسبقًا");
+      return;
+    }
+
+    await loadTimingsFromSettings();
+    _isEvaluating = true;
+    _resetEvaluation();
+
     _secondTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _elapsedTime++;
       _currentCycleTime++;
 
-      // 🔥 هنا نحدث الحالة كل ثانية
       onEvaluationComplete(
           "${"calculating".tr()} (${evaluationDurationSeconds - _elapsedTime} ${"seconds_remaining".tr()})"
       );
 
       if (_currentCycleTime >= intervalSeconds) {
         _recordBlinkCount();
-        _currentCycleTime = 0; // إعادة ضبط عداد الدورة
+        _currentCycleTime = 0;
+        _notificationCycleCount++;
+      }
+
+      if (_notificationCycleCount >= notificationIntervalMinutes) {
+        _evaluateBlinks(sendNotification: true);
+        _notificationCycleCount = 0;
+        _blinkCounts.clear();
       }
 
       if (_elapsedTime >= evaluationDurationSeconds) {
-        timer.cancel();
         _evaluateBlinks();
-        Future.delayed(const Duration(seconds: 3), startEvaluation); // 🔄 إعادة التشغيل بعد 3 ثواني
+        _elapsedTime = 0;
       }
     });
-  }
 
+    debugPrint("▶️ [Evaluator] بدأ التقييم الدوري");
+  }
 
   void _recordBlinkCount() {
     int currentBlinks = _blinkCounter.blinkCount;
     _blinkCounts.add(currentBlinks);
+    NotificationManager.addBlinkRecord(currentBlinks); // ✅ نضيفها هنا
     _blinkCounter.resetCounter();
-    debugPrint(" بعد $_elapsedTime ثانية، عدد الرمشات في الدورة: $currentBlinks");
+    debugPrint("📝 [Evaluator] سجل $currentBlinks رمشات بعد $_elapsedTime ثانية");
   }
 
-  void _evaluateBlinks() {
+  void _evaluateBlinks({bool sendNotification = false}) {
     if (_blinkCounts.isEmpty) return;
-
     double avgBlinks = averageBlinks;
-    debugPrint(" متوسط الرمشات خلال $_elapsedTime ثانية: ${avgBlinks.toStringAsFixed(2)}");
+    debugPrint("📊 [Evaluator] متوسط الرمشات: ${avgBlinks.toStringAsFixed(2)}");
 
     String evaluationMessage = _getBlinkEvaluation(avgBlinks);
     onEvaluationComplete(evaluationMessage);
 
-    // ✅ إرسال إشعار بناءً على التقييم
-    _sendBlinkNotification(evaluationMessage);
+    if (sendNotification) {
+      _sendBlinkNotification(evaluationMessage);
+    }
   }
 
   void _resetEvaluation() {
     _elapsedTime = 0;
     _currentCycleTime = 0;
+    _notificationCycleCount = 0;
     _blinkCounts.clear();
     _blinkCounter.resetCounter();
-    debugPrint("🔄 إعادة ضبط التقييم والبدء من جديد!");
+    debugPrint("🔄 [Evaluator] تم إعادة الضبط الكامل");
   }
 
   String _getBlinkEvaluation(double avgBlinks) {
     if (avgBlinks >= 6 && avgBlinks <= 20) {
-      return   "normal_blink_rate".tr();
+      return "normal_blink_rate".tr();
     } else if (avgBlinks < 6) {
       return "low_blink_rate_warning".tr();
     } else {
-      return   "high_blink_rate_warning".tr();
+      return "high_blink_rate_warning".tr();
     }
   }
 
   void _sendBlinkNotification(String message) {
     NotificationManager.sendNotification(" تقييم الرمشات", message);
-    debugPrint(" تم إرسال إشعار: $message");
+    debugPrint("🔔 [Evaluator] إشعار: $message");
   }
 
   void stopEvaluation() {
-    _timer?.cancel();
     _secondTimer?.cancel();
+    _isEvaluating = false;
+    debugPrint("⏹️ [Evaluator] توقف التقييم");
   }
 
   int get elapsedSeconds => _elapsedTime;

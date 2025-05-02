@@ -5,7 +5,7 @@
   "blink_average": "Average Blinks : ",
   "blink_status": "Blink Status : ",
   "right_eye": "Right Eye 👁:",
-  "left_eye":  "Left  Eye 👁:",
+  "left_eye": "Left  Eye 👁:",
   "power_off": "Power Off",
   "settings": "Settings",
   "dark_mode": "Dark Mode",
@@ -44,7 +44,14 @@
   "face_detected": "Face detected",
   "pause_blinking_monitoring": "Pause Blinking Monitoring",
   "resume_blinking_monitoring": "Resume Blinking Monitoring",
-  "error_detecting_face": "Error detecting face, please try again."
+  "error_detecting_face": "Error detecting face, please try again.",
 
+  "evaluation_every": "Blink evaluation every",
+  "seconds": "seconds",
+  "notification_every": "Notification every",
+  "minutes": "minutes",
+
+  "status_evaluating": "Evaluating ({} seconds remaining)",
+  "status_result": "Blink status: {} ← next evaluation in {} seconds"
 
 }
