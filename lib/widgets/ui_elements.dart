@@ -127,7 +127,20 @@ class _CameraScreenState extends State<CameraScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: _navigateToSettings,
+            onPressed: () async {
+              bool? result = await Navigator.of(context).push(_createRoute());
+              if (result != null) {
+                await _loadSettings(); // ✅ إعادة تحميل الإعدادات
+                setState(() {
+                  darkMode = result;
+                });
+                blinkEvaluator.updateTimings(
+                  newIntervalSeconds: _blinkEvaluationTime,
+                  newEvaluationDurationSeconds: _blinkEvaluationTime,
+                  newNotificationMinutes: _notificationInterval.toInt(),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -216,8 +229,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   "${"blink_count".tr()} ${blinkCounter.blinkCount}\n"
                   "${"blink_average".tr()} ${blinkEvaluator.averageBlinks.toStringAsFixed(2)}\n"
                   "📊 ${"evaluation_every".tr()} ${blinkEvaluator.intervalSeconds} ${"seconds".tr()}\n"
-                  "🔔 ${"notification_every".tr()} ${blinkEvaluator.notificationIntervalMinutes} ${"minutes".tr()}"
-          ),
+                  "🔔 ${"notification_every".tr()} ${blinkEvaluator.notificationIntervalMinutes} ${"minutes".tr()}"),
           _buildInfoBox("${"blink_status".tr()} ${_latestBlinkResult.isNotEmpty ? _latestBlinkResult : "..."}"),
           _buildInfoBox(
             cm.faceDetect
@@ -247,9 +259,8 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isBlinking
-                  ? (darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4))
-                  : Colors.grey,
+              backgroundColor:
+              isBlinking ? (darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4)) : Colors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -305,15 +316,6 @@ class _CameraScreenState extends State<CameraScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
-  }
-
-  Future<void> _navigateToSettings() async {
-    bool? result = await Navigator.of(context).push(_createRoute());
-    if (result != null) {
-      setState(() {
-        darkMode = result;
-      });
-    }
   }
 
   Route<bool> _createRoute() {

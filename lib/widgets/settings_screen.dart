@@ -139,7 +139,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text("settings".tr(), style: const TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context, darkMode),
+          onPressed: () async {
+            // ✅ حفظ وتحديث كل القيم عند الرجوع
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('darkMode', darkMode);
+            await prefs.setBool('notificationsEnabled', notificationsEnabled);
+            await prefs.setDouble('notificationInterval', notificationInterval);
+            await prefs.setDouble('blinkCalculationTime', blinkCalculationTime);
+            await prefs.setString('selectedLanguage', selectedLanguage);
+
+            blinkEvaluator.updateTimings(
+              newIntervalSeconds: blinkCalculationTime.toInt(),
+              newEvaluationDurationSeconds: blinkCalculationTime.toInt(),
+              newNotificationMinutes: notificationInterval.toInt(),
+            );
+
+            if (notificationsEnabled) {
+              await NotificationManager.toggleNotifications(true);
+              await NotificationManager.updateNotificationInterval(notificationInterval);
+            } else {
+              await NotificationManager.toggleNotifications(false);
+            }
+
+            Navigator.pop(context, darkMode);
+          },
         ),
       ),
       body: Padding(
@@ -174,8 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     "language".tr(),
-                    style:
-                    const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   DropdownButton<String>(
                     value: selectedLanguage,
