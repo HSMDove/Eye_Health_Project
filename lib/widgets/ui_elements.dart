@@ -29,7 +29,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool isBlinking = true;
   late CameraManager cm;
 
-  int _blinkEvaluationTime = 60;
+  int _blinkEvaluationTime = 30;
   double _notificationInterval = 15;
   int remainingNotificationSeconds = 0;
   Timer? _countdownTimer;
@@ -114,7 +114,7 @@ class _CameraScreenState extends State<CameraScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       darkMode = prefs.getBool('darkMode') ?? false;
-      _blinkEvaluationTime = prefs.getDouble('blinkCalculationTime')?.toInt() ?? 60;
+      _blinkEvaluationTime = prefs.getDouble('blinkCalculationTime')?.toInt() ?? 30;
       _notificationInterval = prefs.getDouble('notificationInterval') ?? 15;
     });
   }
