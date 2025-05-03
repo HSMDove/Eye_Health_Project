@@ -90,6 +90,7 @@ class NotificationManager {
       priority: Priority.high,
       playSound: true,
       enableVibration: true,
+      icon: 'icon'
     );
 
     const NotificationDetails details = NotificationDetails(android: androidDetails);
