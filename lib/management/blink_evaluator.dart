@@ -18,9 +18,12 @@ class BlinkEvaluator {
   Timer? _secondTimer;
   int _elapsedTime = 0;
   int _currentCycleTime = 0;
-  int _notificationCycleCount = 0;
+  int _notificationCycleSeconds = 0;
   bool _isEvaluating = false;
-  int notificationIntervalMinutes = 15; // ← من الإعدادات
+  int notificationIntervalMinutes = 15;
+
+  /// 🟡 جديد: لحفظ آخر نتيجة تقييم حقيقية
+  String _lastEvaluationResult = "";
 
   BlinkEvaluator({
     required this.onEvaluationComplete,
@@ -38,12 +41,17 @@ class BlinkEvaluator {
     debugPrint("✅ [Evaluator] تحميل الإعدادات: interval=$intervalSeconds, notif=$notificationIntervalMinutes min");
   }
 
-  void updateTimings({required int newIntervalSeconds, required int newEvaluationDurationSeconds, required int newNotificationMinutes}) {
+  void updateTimings({
+    required int newIntervalSeconds,
+    required int newEvaluationDurationSeconds,
+    required int newNotificationMinutes
+  }) {
     intervalSeconds = newIntervalSeconds;
     evaluationDurationSeconds = newEvaluationDurationSeconds;
     notificationIntervalMinutes = newNotificationMinutes;
 
     debugPrint("✅ [Evaluator] تحديث يدوي: interval=$intervalSeconds, duration=$evaluationDurationSeconds, notif=$notificationIntervalMinutes min");
+
     stopEvaluation();
     startEvaluation();
   }
@@ -61,26 +69,25 @@ class BlinkEvaluator {
     _secondTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _elapsedTime++;
       _currentCycleTime++;
+      _notificationCycleSeconds++;
 
-      onEvaluationComplete(
-          "${"calculating".tr()} (${evaluationDurationSeconds - _elapsedTime} ${"seconds_remaining".tr()})"
-      );
-
+      // 🔄 كل interval: نسجل الرمشات
       if (_currentCycleTime >= intervalSeconds) {
         _recordBlinkCount();
         _currentCycleTime = 0;
-        _notificationCycleCount++;
       }
 
-      if (_notificationCycleCount >= notificationIntervalMinutes) {
-        _evaluateBlinks(sendNotification: true);
-        _notificationCycleCount = 0;
-        _blinkCounts.clear();
-      }
-
+      // ✅ كل evaluationDuration: نقيم الحالة ونخزن النتيجة
       if (_elapsedTime >= evaluationDurationSeconds) {
         _evaluateBlinks();
         _elapsedTime = 0;
+      }
+
+      // 🔔 كل notificationInterval: إشعار عبر NotificationManager
+      if (_notificationCycleSeconds >= notificationIntervalMinutes * 60) {
+        _evaluateBlinks(sendNotification: true);
+        _notificationCycleSeconds = 0;
+        _blinkCounts.clear();
       }
     });
 
@@ -90,31 +97,33 @@ class BlinkEvaluator {
   void _recordBlinkCount() {
     int currentBlinks = _blinkCounter.blinkCount;
     _blinkCounts.add(currentBlinks);
-    NotificationManager.addBlinkRecord(currentBlinks); // ✅ نضيفها هنا
+    NotificationManager.addBlinkRecord(currentBlinks);
     _blinkCounter.resetCounter();
-    debugPrint("📝 [Evaluator] سجل $currentBlinks رمشات بعد $_elapsedTime ثانية");
+    debugPrint("📝 [Evaluator] سجل $currentBlinks رمشات");
   }
 
   void _evaluateBlinks({bool sendNotification = false}) {
     if (_blinkCounts.isEmpty) return;
+
     double avgBlinks = averageBlinks;
     debugPrint("📊 [Evaluator] متوسط الرمشات: ${avgBlinks.toStringAsFixed(2)}");
 
-    String evaluationMessage = _getBlinkEvaluation(avgBlinks);
-    onEvaluationComplete(evaluationMessage);
+    _lastEvaluationResult = _getBlinkEvaluation(avgBlinks); // 🟡 نحتفظ بها
+    onEvaluationComplete(_lastEvaluationResult);
 
     if (sendNotification) {
-      _sendBlinkNotification(evaluationMessage);
+      // الإشعارات تُدار من NotificationManager فقط
     }
   }
 
   void _resetEvaluation() {
     _elapsedTime = 0;
     _currentCycleTime = 0;
-    _notificationCycleCount = 0;
+    _notificationCycleSeconds = 0;
     _blinkCounts.clear();
     _blinkCounter.resetCounter();
-    debugPrint("🔄 [Evaluator] تم إعادة الضبط الكامل");
+    _lastEvaluationResult = "";
+    debugPrint("🔄 [Evaluator] تم إعادة ضبط كل المؤقتات");
   }
 
   String _getBlinkEvaluation(double avgBlinks) {
@@ -127,15 +136,10 @@ class BlinkEvaluator {
     }
   }
 
-  void _sendBlinkNotification(String message) {
-    NotificationManager.sendNotification(" تقييم الرمشات", message);
-    debugPrint("🔔 [Evaluator] إشعار: $message");
-  }
-
   void stopEvaluation() {
     _secondTimer?.cancel();
     _isEvaluating = false;
-    debugPrint("⏹️ [Evaluator] توقف التقييم");
+    debugPrint("⏹️ [Evaluator] تم إيقاف التقييم");
   }
 
   int get elapsedSeconds => _elapsedTime;
@@ -144,4 +148,10 @@ class BlinkEvaluator {
     if (_blinkCounts.isEmpty) return 0.0;
     return _blinkCounts.reduce((a, b) => a + b) / _blinkCounts.length;
   }
+
+  /// 🟡 جديد: لعرض النتيجة الثابتة في واجهة المستخدم
+  String get latestEvaluationResult => _lastEvaluationResult;
+
+  /// 🟡 جديد: عد تنازلي دقيق للعرض في واجهة المستخدم
+  int get timeUntilNextEvaluation => evaluationDurationSeconds - _elapsedTime;
 }

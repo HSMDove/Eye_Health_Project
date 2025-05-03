@@ -55,11 +55,7 @@ void main() async {
     startForegroundTask();
   });
 
-  // ✅ تجربة إرسال إشعار بعد 5 ثواني
-  Future.delayed(const Duration(seconds: 5), () {
-    print("🔔 [main] تجربة إرسال إشعار...");
-    NotificationManager.sendNotification("اختبار الإشعارات", "الإشعارات تم تفعيلها");
-  });
+  // 🛑 حذفنا الإشعار التجريبي هنا لأنه غير ضروري ويسبب لخبطة
 }
 
 Future<void> _requestAllPermissions() async {

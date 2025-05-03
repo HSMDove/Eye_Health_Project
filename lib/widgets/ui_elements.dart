@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 import '../management/camera_manager.dart';
 import '../management/blink_counter.dart';
@@ -24,13 +25,14 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isCameraInitialized = false;
   BlinkCounter blinkCounter = BlinkCounter();
   late BlinkEvaluator blinkEvaluator;
-  String _latestBlinkResult = "";
   bool darkMode = false;
   bool isBlinking = true;
   late CameraManager cm;
 
   int _blinkEvaluationTime = 60;
   double _notificationInterval = 15;
+  int remainingNotificationSeconds = 0;
+  Timer? _countdownTimer;
 
   final floating = Floating();
 
@@ -50,9 +52,10 @@ class _CameraScreenState extends State<CameraScreen> {
       blinkCounter: blinkCounter,
       onEvaluationComplete: (String status) {
         if (mounted && status.isNotEmpty) {
-          setState(() {
-            _latestBlinkResult = status;
-          });
+          setState(() {});
+          if (status.contains("normal") || status.contains("low") || status.contains("high")) {
+            _startNotificationCountdown();
+          }
         }
       },
       intervalSeconds: _blinkEvaluationTime,
@@ -60,13 +63,30 @@ class _CameraScreenState extends State<CameraScreen> {
     );
 
     blinkEvaluator.startEvaluation();
+    _startNotificationCountdown();
     _isInitialized = true;
+  }
+
+  void _startNotificationCountdown() {
+    _countdownTimer?.cancel();
+    setState(() {
+      remainingNotificationSeconds = (_notificationInterval * 60).toInt();
+    });
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {
+        if (remainingNotificationSeconds > 0) {
+          remainingNotificationSeconds--;
+        } else {
+          remainingNotificationSeconds = (_notificationInterval * 60).toInt();
+        }
+      });
+    });
   }
 
   Future<void> _initializeCamera() async {
     try {
-      debugPrint("✅ [CameraScreen] نفترض أن الصلاحية جاهزة مسبقًا");
-
       await cm.initializeCamera();
       setState(() {
         _isCameraInitialized = cm.isInitialized;
@@ -78,11 +98,7 @@ class _CameraScreenState extends State<CameraScreen> {
           blinkCounter.updateBlinkCount(face);
         }
       });
-
-      debugPrint("✅ [CameraScreen] الكاميرا بدأت بث الصور");
     } catch (e) {
-      debugPrint("❌ [CameraScreen] فشل في تهيئة الكاميرا: $e");
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -104,6 +120,12 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return const Scaffold(
@@ -112,7 +134,7 @@ class _CameraScreenState extends State<CameraScreen> {
     }
 
     return PiPSwitcher(
-      childWhenEnabled: _buildCameraScaffold(),
+      childWhenEnabled: _buildPiPView(),
       childWhenDisabled: _buildCameraScaffold(),
     );
   }
@@ -130,7 +152,8 @@ class _CameraScreenState extends State<CameraScreen> {
             onPressed: () async {
               bool? result = await Navigator.of(context).push(_createRoute());
               if (result != null) {
-                await _loadSettings(); // ✅ إعادة تحميل الإعدادات
+                await _loadSettings();
+                _startNotificationCountdown();
                 setState(() {
                   darkMode = result;
                 });
@@ -150,9 +173,7 @@ class _CameraScreenState extends State<CameraScreen> {
             const SizedBox(height: 20),
             Center(
               child: _isCameraInitialized
-                  ? (cm.faceDetect == false
-                  ? _buildFaceNotDetected()
-                  : _buildCameraPreview())
+                  ? (cm.faceDetect == false ? _buildFaceNotDetected() : _buildCameraPreview())
                   : const CircularProgressIndicator(),
             ),
             const SizedBox(height: 20),
@@ -162,6 +183,29 @@ class _CameraScreenState extends State<CameraScreen> {
             const Spacer(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          _buildInfoBox("📊 ${"evaluation_every".tr()} ${blinkEvaluator.timeUntilNextEvaluation} ${"seconds".tr()}\n"
+              "${"blink_count".tr()} ${blinkCounter.blinkCount}\n"
+              "${"blink_average".tr()} ${blinkEvaluator.averageBlinks.toStringAsFixed(2)}\n"
+              "🔔 ${"notification_in".tr()} ${remainingNotificationSeconds}s"),
+          _buildInfoBox(blinkEvaluator.latestEvaluationResult.isNotEmpty
+              ? "${"blink_status".tr()} ${blinkEvaluator.latestEvaluationResult}"
+              : "evaluating_now".tr()),
+          _buildInfoBox(
+            cm.faceDetect
+                ? "${"right_eye".tr()} ${blinkCounter.rightEyeStatus.tr()}\n"
+                "${"left_eye".tr()} ${blinkCounter.leftEyeStatus.tr()}"
+                : "no_face_detected".tr(),
+          ),
+        ],
       ),
     );
   }
@@ -178,17 +222,13 @@ class _CameraScreenState extends State<CameraScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "no_face_detected".tr(),
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
+          Text("no_face_detected".tr(),
+              style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center),
           const SizedBox(height: 8),
-          Text(
-            "try_facing_camera".tr(),
-            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
+          Text("try_facing_camera".tr(),
+              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16),
+              textAlign: TextAlign.center),
         ],
       ),
     );
@@ -219,29 +259,6 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
-  Widget _buildInfoSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          _buildInfoBox(
-              "${"start_evaluation_soon".tr()} ${blinkEvaluator.evaluationDurationSeconds - blinkEvaluator.elapsedSeconds}\n"
-                  "${"blink_count".tr()} ${blinkCounter.blinkCount}\n"
-                  "${"blink_average".tr()} ${blinkEvaluator.averageBlinks.toStringAsFixed(2)}\n"
-                  "📊 ${"evaluation_every".tr()} ${blinkEvaluator.intervalSeconds} ${"seconds".tr()}\n"
-                  "🔔 ${"notification_every".tr()} ${blinkEvaluator.notificationIntervalMinutes} ${"minutes".tr()}"),
-          _buildInfoBox("${"blink_status".tr()} ${_latestBlinkResult.isNotEmpty ? _latestBlinkResult : "..."}"),
-          _buildInfoBox(
-            cm.faceDetect
-                ? "${"right_eye".tr()} ${blinkCounter.rightEyeStatus.tr()}\n"
-                "${"left_eye".tr()} ${blinkCounter.leftEyeStatus.tr()}"
-                : "no_face_detected".tr(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildControlButton() {
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -259,11 +276,10 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-              isBlinking ? (darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4)) : Colors.grey,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
+              backgroundColor: isBlinking
+                  ? (darkMode ? const Color(0xFFffa08c) : const Color(0xff79a7b4))
+                  : Colors.grey,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               padding: const EdgeInsets.symmetric(vertical: 12),
               elevation: isBlinking ? 10 : 2,
             ),
@@ -286,6 +302,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     if (isBlinking) {
       blinkEvaluator.startEvaluation();
+      _startNotificationCountdown();
       await cm.startImageStream((faces) {
         if (mounted && faces.isNotEmpty) {
           final face = faces.first;
@@ -295,6 +312,7 @@ class _CameraScreenState extends State<CameraScreen> {
       _showSnackBar("blinking_resumed".tr(), Colors.green);
     } else {
       blinkEvaluator.stopEvaluation();
+      _countdownTimer?.cancel();
       await cm.stopImageStream();
       _showSnackBar("blinking_paused".tr(), Colors.red);
     }
@@ -341,6 +359,49 @@ class _CameraScreenState extends State<CameraScreen> {
           text,
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPiPView() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "👁️ Blink status",
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              blinkEvaluator.latestEvaluationResult.length > 20
+                  ? blinkEvaluator.latestEvaluationResult.substring(0, 20) + "..."
+                  : blinkEvaluator.latestEvaluationResult,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Blink: ${blinkCounter.blinkCount}",
+              style: TextStyle(color: Colors.white, fontSize: 11),
+            ),
+            Text(
+              "Average: ${blinkEvaluator.averageBlinks.toStringAsFixed(1)}",
+              style: TextStyle(color: Colors.white, fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "🔔 ${remainingNotificationSeconds}s",
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+            ),
+          ],
         ),
       ),
     );

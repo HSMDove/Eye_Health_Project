@@ -92,8 +92,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _updateSetting('darkMode', value, (val) => darkMode = val);
 
   Future<void> _updateNotifications(bool value) async {
-    await _updateSetting('notificationsEnabled', value, (val) => notificationsEnabled = val);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notificationsEnabled', value);
+
+    setState(() {
+      notificationsEnabled = value;
+    });
+
+    // نفذ التغيير مباشرة
     await NotificationManager.toggleNotifications(value);
+
+    if (value) {
+      await NotificationManager.updateNotificationInterval(notificationInterval);
+    }
   }
 
   Future<void> _updateNotificationInterval(double value) async {
@@ -118,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Color _getSliderColor(double value) {
-    if (value <= 10) return Colors.yellow;
+    if (value <= 5) return Colors.yellow;
     if (value <= 20) return Colors.green;
     return Colors.red;
   }
@@ -140,7 +151,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () async {
-            // ✅ حفظ وتحديث كل القيم عند الرجوع
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool('darkMode', darkMode);
             await prefs.setBool('notificationsEnabled', notificationsEnabled);
@@ -185,10 +195,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: _updateNotifications,
             ),
             const Divider(color: Colors.white, thickness: 2, height: 30),
-            _buildSliderRow("notification_interval".tr(), notificationInterval, 5, 40, 7,
+
+            // ✅ شريط تمرير جديد لعدد الدقائق (بدل القائمة)
+            _buildSliderRow("notification_interval".tr(), notificationInterval, 1, 30, 29,
                 _updateNotificationInterval, _getSliderColor),
+
             _buildSliderRow("blink_calculation_pause".tr(), blinkCalculationTime, 30, 90, 2,
                 _updateBlinkCalculationTime, _getBlinkSliderColor),
+
             const Divider(color: Colors.white, thickness: 2, height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),

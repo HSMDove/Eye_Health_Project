@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class NotificationManager {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -22,10 +23,9 @@ class NotificationManager {
 
     await _notificationsPlugin.initialize(settings);
 
-    await _startTimerIfEnabled(); // ✅ بدء المؤقت مباشرة إذا مفعّل
+    await _startTimerIfEnabled();
   }
 
-  /// طلب إذن الإشعارات
   static Future<void> _requestNotificationPermission() async {
     final status = await Permission.notification.request();
     if (status.isGranted) {
@@ -35,7 +35,6 @@ class NotificationManager {
     }
   }
 
-  /// تشغيل المؤقت الدوري إذا كانت الإشعارات مفعّلة
   static Future<void> _startTimerIfEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('notificationsEnabled') ?? false;
@@ -46,14 +45,12 @@ class NotificationManager {
     _startNotificationTimer(intervalMinutes);
   }
 
-  /// دالة عامة لإعادة جدولة الإشعارات من الإعدادات
   static Future<void> updateNotificationInterval(double minutes) async {
     _notificationTimer?.cancel();
     _startNotificationTimer(minutes);
     print("📥 [NotificationManager] تم ضبط الفاصل الزمني الجديد: $minutes دقيقة");
   }
 
-  /// ✅ تفعيل أو إيقاف الإشعارات من الإعدادات مباشرة
   static Future<void> toggleNotifications(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notificationsEnabled', enabled);
@@ -67,21 +64,33 @@ class NotificationManager {
     }
   }
 
-  /// بدء مؤقت الإشعارات
   static void _startNotificationTimer(double intervalMinutes) {
     print("🔁 بدء إرسال الإشعارات كل $intervalMinutes دقيقة");
 
     _blinkRecords.clear();
-    _notificationTimer = Timer.periodic(
-      Duration(minutes: intervalMinutes.toInt()),
-          (timer) {
-        _sendBlinkSummaryNotification();
-      },
-    );
+
+    // أول إشعار بعد أول دورة
+    Future.delayed(Duration(minutes: intervalMinutes.toInt()), () {
+      sendBlinkSummaryNotification();
+
+      _notificationTimer = Timer.periodic(
+        Duration(minutes: intervalMinutes.toInt()),
+            (timer) {
+          sendBlinkSummaryNotification();
+        },
+      );
+    });
   }
 
-  /// إرسال إشعار فوري
   static Future<void> sendNotification(String title, String body) async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('notificationsEnabled') ?? true;
+
+    if (!enabled) {
+      print("🔕 تم تعطيل الإشعارات، لن يتم الإرسال");
+      return;
+    }
+
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'blink_notifications',
       'إشعارات صحة العين',
@@ -90,7 +99,7 @@ class NotificationManager {
       priority: Priority.high,
       playSound: true,
       enableVibration: true,
-      icon: 'icon'
+      icon: 'icon',
     );
 
     const NotificationDetails details = NotificationDetails(android: androidDetails);
@@ -98,30 +107,33 @@ class NotificationManager {
     await _notificationsPlugin.show(0, title, body, details);
   }
 
-  /// إرسال إشعار متوسط الرمشات
-  static void _sendBlinkSummaryNotification() {
-    if (_blinkRecords.isEmpty) return;
-
-    double avg = _blinkRecords.reduce((a, b) => a + b) / _blinkRecords.length;
-    String msg;
-    if (avg >= 6 && avg <= 20) {
-      msg = "معدل الرمش طبيعي ✅ (${avg.toStringAsFixed(2)})";
-    } else if (avg < 6) {
-      msg = "⚠️ معدل الرمش منخفض (${avg.toStringAsFixed(2)})";
-    } else {
-      msg = "⚠️ معدل الرمش مرتفع (${avg.toStringAsFixed(2)})";
+  static void sendBlinkSummaryNotification() {
+    if (_blinkRecords.isEmpty) {
+      print("⚠️ لا توجد بيانات رمشات لعرضها");
+      return;
     }
 
-    sendNotification("تقييم الرمش", msg);
+    double avg = _blinkRecords.reduce((a, b) => a + b) / _blinkRecords.length;
+    String statusKey;
+    if (avg >= 6 && avg <= 20) {
+      statusKey = "normal_blink_rate";
+    } else if (avg < 6) {
+      statusKey = "low_blink_rate_warning";
+    } else {
+      statusKey = "high_blink_rate_warning";
+    }
+
+    String translatedStatus = statusKey.tr();
+    String msg = "${"blink_status".tr()} : $translatedStatus";
+
+    sendNotification("🔔 ${"blink_status".tr()}", msg);
     _blinkRecords.clear();
   }
 
-  /// إضافة عدد رمشات جديد إلى القائمة
   static void addBlinkRecord(int count) {
     _blinkRecords.add(count);
   }
 
-  /// إيقاف الإشعارات تمامًا (مثلاً إذا المستخدم ألغى التفعيل)
   static void stopNotifications() {
     _notificationTimer?.cancel();
     _notificationTimer = null;
