@@ -15,7 +15,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool darkMode = false;
-  bool notificationsEnabled = false;
+  bool notificationsEnabled = true;
   double notificationInterval = 15;
   double blinkCalculationTime = 60;
   String selectedLanguage = "العربية";
@@ -203,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: selectedLanguage,
                     dropdownColor: darkMode ? const Color(0xFF002134) : Colors.white,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
-                    items: ["العربية", "English"].map((String language) {
+                    items: ["English", "العربية"].map((String language) {
                       return DropdownMenuItem<String>(
                         value: language,
                         child: Text(
@@ -237,7 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           min: min,
           max: max,
           divisions: divisions,
-          label: "${value.toInt()} ${title.contains("interval") ? "دقيقة" : "ثانية"}",
+          label: "${value.toInt()} ${title.contains("Interval") ? "${"minutes".tr()}" : "${"seconds".tr()}"}",
           onChanged: onChanged,
           activeColor: getColor(value),
           inactiveColor: Colors.grey.withOpacity(0.3),
