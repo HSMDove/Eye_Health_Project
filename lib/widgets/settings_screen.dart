@@ -251,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           min: min,
           max: max,
           divisions: divisions,
-          label: "${value.toInt()} ${title.contains("Interval") ? "${"minutes".tr()}" : "${"seconds".tr()}"}",
+          label: "${value.toInt()} ${title.contains("notification") ? "${"minutes".tr()}" : "${"seconds".tr()}"}",
           onChanged: onChanged,
           activeColor: getColor(value),
           inactiveColor: Colors.grey.withOpacity(0.3),
