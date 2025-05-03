@@ -185,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: _updateNotifications,
             ),
             const Divider(color: Colors.white, thickness: 2, height: 30),
-            _buildSliderRow("notification_interval".tr(), notificationInterval, 5, 40, 7,
+            _buildSliderRow("notification_interval".tr(), notificationInterval, 1, 30, 29,
                 _updateNotificationInterval, _getSliderColor),
             _buildSliderRow("blink_calculation_pause".tr(), blinkCalculationTime, 30, 90, 2,
                 _updateBlinkCalculationTime, _getBlinkSliderColor),

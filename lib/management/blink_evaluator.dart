@@ -128,7 +128,7 @@ class BlinkEvaluator {
   }
 
   void _sendBlinkNotification(String message) {
-    NotificationManager.sendNotification(" تقييم الرمشات", message);
+    NotificationManager.sendNotification("${"evaluating_title".tr()}", message);
     debugPrint("🔔 [Evaluator] إشعار: $message");
   }
 

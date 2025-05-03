@@ -52,6 +52,7 @@
   "minutes": "minutes",
 
   "status_evaluating": "Evaluating ({} seconds remaining)",
-  "status_result": "Blink status: {} ← next evaluation in {} seconds"
+  "status_result": "Blink status: {} ← next evaluation in {} seconds",
 
+  "evaluating_title": "Evaluating blinks"
 }
