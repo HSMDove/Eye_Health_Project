@@ -1,4 +1,4 @@
-# Eye Health Project
+# Eye Health:Smart Blink Detection App
 
 Eye blink monitoring app
 
